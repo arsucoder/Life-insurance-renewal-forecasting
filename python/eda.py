@@ -238,3 +238,40 @@ plt.savefig(
 plt.close()
 
 print("\nSaved:", seasonality_path)
+
+# ============================================================
+# 11. SEASONAL DECOMPOSITION
+# ============================================================
+
+from statsmodels.tsa.seasonal import seasonal_decompose
+
+ts = df.set_index("collection_month")["renewed_premium"]
+
+decomposition = seasonal_decompose(
+    ts,
+    model="additive",
+    period=12
+)
+
+decomposition.plot()
+plt.tight_layout()
+
+decomposition_path = FIGURES_DIR / "renewed_premium_decomposition.png"
+
+plt.savefig(
+    decomposition_path,
+    dpi=150,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+print("\nSaved:", decomposition_path)
+
+from IPython.display import Image, display
+
+display(
+    Image(
+        "reports/figures/renewed_premium_decomposition.png"
+    )
+)
