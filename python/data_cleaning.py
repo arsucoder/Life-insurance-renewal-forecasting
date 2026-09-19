@@ -1,31 +1,17 @@
 import pandas as pd
-import numpy as np
 
 
-# Load dataset
-df = pd.read_csv('../data/raw/insurance_renewal_100k_IRDAI_calibrated.csv')
+# ============================================================
+# 1. DATA CLEANING
+# ============================================================
 
-
-# For time series forecasting, collection_date must be a proper date
+# Convert collection_date to datetime
 df['collection_date'] = pd.to_datetime(
     df['collection_date'],
     errors='coerce'
 )
 
-
-# Month column creation
-df['collection_month'] = (
-    df['collection_date']
-    .dt.to_period('M')
-    .astype(str)
-)
-
-
-# Separate column only for year
-df['year'] = df['collection_date'].dt.year
-
-
-# Convert numerical columns
+# Convert numeric columns
 numeric_columns = [
     'premium_amount',
     'policy_duration',
@@ -33,11 +19,7 @@ numeric_columns = [
 ]
 
 for col in numeric_columns:
-    df[col] = pd.to_numeric(
-        df[col],
-        errors='coerce'
-    )
-
+    df[col] = pd.to_numeric(df[col], errors='coerce')
 
 # Clean categorical columns
 categorical_columns = [
@@ -52,75 +34,106 @@ for col in categorical_columns:
     df[col] = df[col].astype('string').str.strip()
 
 
-# Creation of premium outlier flag
-Q1 = df['premium_amount'].quantile(0.25)
-Q3 = df['premium_amount'].quantile(0.75)
+# ============================================================
+# 2. DATA QUALITY / EDA CHECKS
+# ============================================================
 
-IQR = Q3 - Q1
+# Dataset information
+df.info()
 
-lower_bound = Q1 - 1.5 * IQR
-upper_bound = Q3 + 1.5 * IQR
+# Check duplicate policy IDs
+print("Duplicate policy IDs:", df['policy_id'].duplicated().sum())
 
-df['premium_outlier_flag'] = (
-    (df['premium_amount'] < lower_bound) |
-    (df['premium_amount'] > upper_bound)
-).astype(int)
-
-
-# Creation of age outlier flag
-Q1_age = df['customer_age'].quantile(0.25)
-Q3_age = df['customer_age'].quantile(0.75)
-
-IQR_age = Q3_age - Q1_age
-
-lower_age = Q1_age - 1.5 * IQR_age
-upper_age = Q3_age + 1.5 * IQR_age
-
-df['age_outlier_flag'] = (
-    (df['customer_age'] < lower_age) |
-    (df['customer_age'] > upper_age)
-).astype(int)
+# Check duplicate complete rows
+print("Duplicate complete rows:", df.duplicated().sum())
 
 
-# Creation of duration buckets
-bins = [0, 10, 15, 20, 25]
-labels = [
-    '5-10 Years',
-    '11-15 Years',
-    '16-20 Years',
-    '21-25 Years'
-]
+# ============================================================
+# 3. CATEGORICAL DATA ANALYSIS
+# ============================================================
 
-df['duration_bucket'] = pd.cut(
-    df['policy_duration'],
-    bins=bins,
-    labels=labels,
-    include_lowest=True
+print("INSURERS:")
+print(df['insurer'].value_counts())
+
+print("\nPAYMENT MODES:")
+print(df['payment_mode'].value_counts())
+
+print("\nPOLICY TYPES:")
+print(df['policy_type'].value_counts())
+
+print("\nREGIONS:")
+print(df['region'].value_counts())
+
+print("\nRENEWAL STATUS:")
+print(df['renewal_status'].value_counts())
+
+
+# ============================================================
+# 4. NUMERICAL DATA ANALYSIS
+# ============================================================
+
+print("\nNumerical Summary:")
+print(
+    df[
+        ['premium_amount',
+         'policy_duration',
+         'customer_age']
+    ].describe()
+)
+
+print("\nAge range:")
+print(
+    df['customer_age'].min(),
+    "to",
+    df['customer_age'].max()
+)
+
+print("\nPolicy duration range:")
+print(
+    df['policy_duration'].min(),
+    "to",
+    df['policy_duration'].max()
+)
+
+print("\nPremium range:")
+print(
+    df['premium_amount'].min(),
+    "to",
+    df['premium_amount'].max()
 )
 
 
-# Creation of renewal flag
-df['renewal_flag'] = (
+# ============================================================
+# 5. RENEWAL ANALYSIS
+# ============================================================
+
+renewal_proportion = (
     df['renewal_status']
-    .str.strip()
-    .str.lower()
-    .map({
-        'renewed': 1,
-        'lapsed': 0
-    })
+    .value_counts(normalize=True) * 100
 )
 
-
-# Sort by collection date
-df = df.sort_values(
-    'collection_date'
-).reset_index(drop=True)
+print("\nRenewal Status Percentage:")
+print(renewal_proportion)
 
 
-# Save processed dataset
-output_file = '../data/processed/Insurance_renewal_preprocessed.csv'
+# ============================================================
+# 6. INVALID VALUE CHECKS
+# ============================================================
 
-df.to_csv(
-    output_file,
-    index=False
+print(
+    "Invalid premium values:",
+    (df['premium_amount'] <= 0).sum()
+)
+
+print(
+    "Invalid customer ages:",
+    (
+        (df['customer_age'] < 18) |
+        (df['customer_age'] > 100)
+    ).sum()
+)
+
+print(
+    "Invalid policy durations:",
+    (df['policy_duration'] <= 0).sum()
 )
