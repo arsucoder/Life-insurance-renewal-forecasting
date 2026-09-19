@@ -1,4 +1,4 @@
-from data_loader import df
+from data_cleaning import df
 import pandas as pd
 
 
