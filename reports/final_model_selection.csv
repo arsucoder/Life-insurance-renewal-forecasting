@@ -1,0 +1,9 @@
+insurer,final_model,historical_start,historical_end,historical_observations,forecast_months
+Aditya Birla Sun Life,ARIMA,2021-04-01,2025-03-01,48,12
+Bajaj Allianz,Naive,2021-04-01,2025-03-01,48,12
+HDFC Life,ARIMA,2021-04-01,2025-03-01,48,12
+ICICI Prudential,Seasonal Naive,2021-04-01,2025-03-01,48,12
+LIC,Default Prophet,2021-04-01,2025-03-01,48,12
+Max Life,Naive,2021-04-01,2025-03-01,48,12
+SBI Life,Seasonal Naive,2021-04-01,2025-03-01,48,12
+Tata AIA,Naive,2021-04-01,2025-03-01,48,12
