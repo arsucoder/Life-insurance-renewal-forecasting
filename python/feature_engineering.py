@@ -1,3 +1,4 @@
+from data_cleaning import df
 import pandas as pd
 
 
