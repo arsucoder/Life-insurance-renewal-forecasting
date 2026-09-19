@@ -1,3 +1,4 @@
+from data_loader import df
 import pandas as pd
 
 
