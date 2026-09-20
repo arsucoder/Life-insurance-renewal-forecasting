@@ -21,13 +21,6 @@ st.set_page_config(
 
 st.title("🤖 Forecasting Model Comparison")
 
-st.markdown(
-    """
-    Compare the forecasting performance of different time-series
-    models across all insurers using MAE, RMSE and MAPE.
-    """
-)
-
 st.divider()
 
 

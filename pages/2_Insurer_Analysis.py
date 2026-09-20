@@ -20,12 +20,6 @@ st.set_page_config(
 
 st.title("🏢 Insurer Analysis")
 
-st.markdown(
-    """
-    Analyze insurer-wise policy volume, premium performance,
-    and renewal behavior over time.
-    """
-)
 
 st.divider()
 

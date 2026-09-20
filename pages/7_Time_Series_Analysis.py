@@ -25,14 +25,6 @@ st.set_page_config(
 
 st.title("📈 Time Series Analysis")
 
-st.markdown(
-    """
-    Analyze the historical monthly renewal-premium series
-    before applying forecasting models such as ARIMA,
-    SARIMA and Prophet.
-    """
-)
-
 st.divider()
 
 
