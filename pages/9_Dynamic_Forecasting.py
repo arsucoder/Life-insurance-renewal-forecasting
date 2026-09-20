@@ -21,7 +21,7 @@ st.set_page_config(
 # TITLE
 # ============================================================
 
-st.title("Dynamic Insurance Premium Forecasting")
+st.title("🔮 Dynamic Insurance Premium Forecasting")
 
 st.divider()
 
@@ -331,7 +331,7 @@ else:
 # CURRENT INFORMATION
 # ============================================================
 
-st.subheader("Forecast Configuration")
+st.subheader("📊 Forecast Configuration")
 
 
 col1, col2, col3, col4 = st.columns(4)
@@ -559,7 +559,7 @@ def generate_forecast(
 # ============================================================
 
 generate = st.button(
-    "Generate Forecast",
+    "🚀 Generate Forecast",
     type="primary",
     use_container_width=True
 )
@@ -584,9 +584,82 @@ if generate:
             )
 
 
+        st.success(
+            f"""
+            Forecast successfully generated for
+            **{selected_insurer}**.
+            """
+        )
 
 
+        # ====================================================
+        # FORECAST KPIs
+        # ====================================================
 
+        st.subheader("📈 Forecast Summary")
+
+
+        total_forecast = (
+            forecast_df[
+                "forecast_renewed_premium"
+            ].sum()
+        )
+
+
+        average_forecast = (
+            forecast_df[
+                "forecast_renewed_premium"
+            ].mean()
+        )
+
+
+        minimum_forecast = (
+            forecast_df[
+                "forecast_renewed_premium"
+            ].min()
+        )
+
+
+        maximum_forecast = (
+            forecast_df[
+                "forecast_renewed_premium"
+            ].max()
+        )
+
+
+        c1, c2, c3, c4 = st.columns(4)
+
+
+        with c1:
+
+            st.metric(
+                "Total Forecast",
+                f"₹{total_forecast/1e7:.2f} Cr"
+            )
+
+
+        with c2:
+
+            st.metric(
+                "Average / Month",
+                f"₹{average_forecast/1e7:.2f} Cr"
+            )
+
+
+        with c3:
+
+            st.metric(
+                "Minimum",
+                f"₹{minimum_forecast/1e7:.2f} Cr"
+            )
+
+
+        with c4:
+
+            st.metric(
+                "Maximum",
+                f"₹{maximum_forecast/1e7:.2f} Cr"
+            )
 
 
         # ====================================================
@@ -594,7 +667,7 @@ if generate:
         # ====================================================
 
         st.subheader(
-            " Historical vs Future Forecast"
+            "📉 Historical vs Future Forecast"
         )
 
 
@@ -657,13 +730,14 @@ if generate:
             fig,
             clear_figure=True
         )
-        st.divider()
+
+
         # ====================================================
         # FORECAST TABLE
         # ====================================================
 
         st.subheader(
-            " Monthly Forecast"
+            "📋 Monthly Forecast"
         )
 
 
@@ -711,6 +785,9 @@ if generate:
         # MONTHLY FORECAST BAR CHART
         # ====================================================
 
+        st.subheader(
+            "📊 Monthly Forecast"
+        )
 
 
         bar_df = forecast_df.copy()
@@ -740,66 +817,7 @@ if generate:
                 "forecast_renewed_premium"
             ]
         )
-        st.divider()
-        # ====================================================
-        # FORECAST KPIs
-        # ====================================================
 
-        st.subheader("Forecast Summary")
-
-        total_forecast = (
-            forecast_df[
-                "forecast_renewed_premium"
-            ].sum()
-        )
-
-        average_forecast = (
-            forecast_df[
-                "forecast_renewed_premium"
-            ].mean()
-        )
-
-        minimum_forecast = (
-            forecast_df[
-                "forecast_renewed_premium"
-            ].min()
-        )
-
-        maximum_forecast = (
-            forecast_df[
-                "forecast_renewed_premium"
-            ].max()
-        )
-
-        c1, c2, c3, c4 = st.columns(4)
-
-        with c1:
-
-            st.metric(
-                "Total Forecast",
-                f"₹{total_forecast / 1e7:.2f} Cr"
-            )
-
-        with c2:
-
-            st.metric(
-                "Average / Month",
-                f"₹{average_forecast / 1e7:.2f} Cr"
-            )
-
-        with c3:
-
-            st.metric(
-                "Minimum",
-                f"₹{minimum_forecast / 1e7:.2f} Cr"
-            )
-
-        with c4:
-
-            st.metric(
-                "Maximum",
-                f"₹{maximum_forecast / 1e7:.2f} Cr"
-            )
 
         # ====================================================
         # DOWNLOAD
