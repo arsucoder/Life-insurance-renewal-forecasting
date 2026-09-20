@@ -18,7 +18,7 @@ st.set_page_config(
 # TITLE
 # ============================================================
 
-st.title("💳 Payment Mode Analysis")
+st.title("Payment Mode Analysis")
 
 
 
@@ -116,7 +116,7 @@ df = df.sort_values(
 # SIDEBAR
 # ============================================================
 
-st.sidebar.header("🔎 Payment Filters")
+st.sidebar.header("Payment Filters")
 
 
 # ============================================================
@@ -189,7 +189,7 @@ if payment_df.empty:
 # ============================================================
 
 st.header(
-    f"📌 {selected_payment}"
+    f"{selected_payment} Payment"
 )
 
 st.caption(
@@ -319,7 +319,7 @@ st.divider()
 # MONTHLY RENEWAL RATE
 # ============================================================
 
-st.subheader("📈 Monthly Renewal Rate")
+st.subheader("Monthly Renewal Rate")
 
 
 renewal_chart = payment_df[
@@ -344,7 +344,7 @@ st.line_chart(
 # PREMIUM TREND
 # ============================================================
 
-st.subheader("💰 Monthly Premium Performance")
+st.subheader("Monthly Premium Performance")
 
 
 premium_chart = payment_df[
@@ -379,7 +379,7 @@ st.line_chart(
 # POLICY TREND
 # ============================================================
 
-st.subheader("📋 Monthly Policy Performance")
+st.subheader("Monthly Policy Performance")
 
 
 policy_chart = payment_df[
@@ -411,7 +411,7 @@ st.line_chart(
 # RENEWAL RATE BAR CHART
 # ============================================================
 
-st.subheader("📊 Renewal Rate by Month")
+st.subheader(" Renewal Rate by Month")
 
 
 rate_chart = payment_df[
@@ -436,7 +436,7 @@ st.bar_chart(
 # PERFORMANCE HIGHLIGHTS
 # ============================================================
 
-st.subheader("📅 Performance Highlights")
+st.subheader("Performance Highlights")
 
 
 best_idx = payment_df[
@@ -493,7 +493,7 @@ with col2:
 
 st.divider()
 
-st.subheader("🔄 Payment Mode Comparison")
+st.subheader("Payment Mode Comparison")
 
 
 comparison = (
@@ -588,7 +588,7 @@ st.dataframe(
 
 st.divider()
 
-st.subheader("📄 Monthly Payment Mode Data")
+st.subheader(" Monthly Payment Mode Data")
 
 
 display_df = payment_df.copy()

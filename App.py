@@ -62,7 +62,7 @@ DATA_FILES = [
 PAGES = [
     {
         "file": "pages/01_Overview.py",
-        "icon": "🏠",
+        "icon": "",
         "title": "Overview",
         "desc": "High-level summary of renewal performance across the whole portfolio.",
         "category": "Descriptive Analysis",
@@ -70,7 +70,7 @@ PAGES = [
     },
     {
         "file": "pages/2_Insurer_Analysis.py",
-        "icon": "🏢",
+        "icon": "",
         "title": "Insurer Analysis",
         "desc": "Drill into any insurer: renewal rate, premium and policy trends by month.",
         "category": "Descriptive Analysis",
@@ -78,7 +78,7 @@ PAGES = [
     },
     {
         "file": "pages/3_Payment_Analysis.py",
-        "icon": "💳",
+        "icon": "",
         "title": "Payment Analysis",
         "desc": "Compare renewal behaviour across payment modes.",
         "category": "Descriptive Analysis",
@@ -86,7 +86,7 @@ PAGES = [
     },
     {
         "file": "pages/4_Policy_Type_Analysis.py",
-        "icon": "📋",
+        "icon": "",
         "title": "Policy Type Analysis",
         "desc": "See which policy types renew best and where premium is concentrated.",
         "category": "Descriptive Analysis",
@@ -94,7 +94,7 @@ PAGES = [
     },
     {
         "file": "pages/5_Region_Analysis.py",
-        "icon": "🌍",
+        "icon": "",
         "title": "Region Analysis",
         "desc": "Regional renewal performance, premium and policy trends.",
         "category": "Descriptive Analysis",
@@ -102,7 +102,7 @@ PAGES = [
     },
     {
         "file": "pages/6_Yearly_Analysis.py",
-        "icon": "📅",
+        "icon": "",
         "title": "Yearly Analysis",
         "desc": "Financial-year view with year-over-year growth and best/worst years.",
         "category": "Descriptive Analysis",
@@ -110,7 +110,7 @@ PAGES = [
     },
     {
         "file": "pages/7_Time_Series_Analysis.py",
-        "icon": "📈",
+        "icon": "",
         "title": "Time Series Analysis",
         "desc": "Trend, seasonality, stationarity (ADF), ACF and PACF of renewed premium.",
         "category": "Forecasting",
@@ -118,7 +118,7 @@ PAGES = [
     },
     {
         "file": "pages/8_Model_Comparison.py",
-        "icon": "🤖",
+        "icon": "",
         "title": "Model Comparison",
         "desc": "Compare Naive, Seasonal Naive, ARIMA, SARIMA and Prophet by MAPE, MAE and RMSE.",
         "category": "Forecasting",
@@ -126,7 +126,7 @@ PAGES = [
     },
     {
         "file": "pages/9_Dynamic_Forecasting.py",
-        "icon": "🔮",
+        "icon": "",
         "title": "Dynamic Forecasting",
         "desc": "Generate forecasts interactively and explore what the future may look like.",
         "category": "Forecasting",
@@ -134,7 +134,7 @@ PAGES = [
     },
     {
         "file": "pages/10_Business_Insights.py",
-        "icon": "💡",
+        "icon": "",
         "title": "Business Insights",
         "desc": "Automatic insights, growth outlook and insurer comparison from forecasts.",
         "category": "Business",
@@ -208,7 +208,7 @@ def render_card(page):
             st.page_link(
                 page["file"],
                 label="Open page",
-                icon="➡️",
+
                 use_container_width=True,
             )
         else:
@@ -227,7 +227,7 @@ def render_cards(pages, ncols=3):
 # HERO
 # ============================================================
 
-st.title("🛡️ Insurance Renewal Analytics & Forecasting")
+st.title("Insurance Renewal Analytics & Forecasting")
 
 st.markdown(
     """
@@ -244,7 +244,7 @@ st.divider()
 # LIVE SNAPSHOT (INTERACTIVE)
 # ============================================================
 
-st.subheader("⚡ Live Snapshot")
+st.subheader("Live Snapshot")
 
 snapshot_ready = False
 
@@ -315,7 +315,7 @@ if snapshot_ready:
                 options=all_months,
                 value=(all_months[0], all_months[-1]),
                 format_func=lambda d: d.strftime("%b %Y"),
-                key="snap_period",
+                key="snap_period"
             )
         else:
             start_m, end_m = all_months[0], all_months[0]
@@ -405,7 +405,7 @@ if snapshot_ready:
 
         # ---------------- Leaderboard ----------------
 
-        with st.expander("🏆 Insurer leaderboard for this period", expanded=False):
+        with st.expander(" Insurer leaderboard for this period", expanded=False):
 
             board = (
                 period_df
@@ -480,7 +480,7 @@ if snapshot_ready:
             st.page_link(
                 "pages/2_Insurer_Analysis.py",
                 label="Open detailed Insurer Analysis",
-                icon="🏢",
+                icon="",
             )
 
 st.divider()
@@ -490,7 +490,7 @@ st.divider()
 # GUIDED NAVIGATION
 # ============================================================
 
-st.subheader("🧭 What do you want to find out?")
+st.subheader(" What do you want to find out?")
 
 guided_col1, guided_col2 = st.columns([3, 1])
 
@@ -527,7 +527,7 @@ st.divider()
 # PAGE EXPLORER (SEARCH + TABS)
 # ============================================================
 
-st.subheader("🗂️ Explore All Pages")
+st.subheader("Explore All Pages")
 
 query = st.text_input(
     "Search pages",
@@ -570,7 +570,7 @@ st.divider()
 # WORKFLOW
 # ============================================================
 
-with st.expander("🔄 Suggested analysis workflow"):
+with st.expander("Suggested analysis workflow"):
     st.markdown(
         """
         1. **Overview** — understand the overall renewal picture.
@@ -587,7 +587,7 @@ with st.expander("🔄 Suggested analysis workflow"):
 # SYSTEM CHECK
 # ============================================================
 
-with st.expander("🛠️ System check (data & page files)"):
+with st.expander("System check (data & page files)"):
 
     left, right = st.columns(2)
 

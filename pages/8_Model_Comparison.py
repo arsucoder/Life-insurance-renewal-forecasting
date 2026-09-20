@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(
     page_title="Model Comparison",
-    page_icon="🤖",
+    page_icon="",
     layout="wide"
 )
 
@@ -19,7 +19,7 @@ st.set_page_config(
 # TITLE
 # ============================================================
 
-st.title("🤖 Forecasting Model Comparison")
+st.title("Forecasting Model Comparison")
 
 st.divider()
 
@@ -104,7 +104,7 @@ df = df.dropna(
 # SIDEBAR
 # ============================================================
 
-st.sidebar.header("🔎 Comparison Filters")
+st.sidebar.header("Comparison Filters")
 
 
 insurers = sorted(
@@ -173,7 +173,7 @@ if filtered_df.empty:
 # KPI SECTION
 # ============================================================
 
-st.subheader("📊 Model Performance Overview")
+st.subheader("Model Performance Overview")
 
 
 col1, col2, col3, col4 = st.columns(4)
@@ -224,7 +224,7 @@ st.divider()
 # ============================================================
 
 st.subheader(
-    f"📈 {metric} Comparison by Insurer"
+    f"{metric} Comparison by Insurer"
 )
 
 
@@ -246,7 +246,7 @@ st.line_chart(
 # ============================================================
 
 st.subheader(
-    f"📊 {metric} by Model"
+    f"{metric} by Model"
 )
 
 
@@ -278,7 +278,7 @@ else:
 # MAPE COMPARISON
 # ============================================================
 
-st.subheader("🎯 MAPE Comparison")
+st.subheader("MAPE Comparison")
 
 mape_df = filtered_df.pivot_table(
     index="Insurer",
@@ -297,7 +297,7 @@ st.bar_chart(
 # BEST MODEL PER INSURER
 # ============================================================
 
-st.subheader("🏆 Best Model by Insurer")
+st.subheader("Best Model by Insurer")
 
 
 best_models = (
@@ -340,7 +340,7 @@ st.dataframe(
 # MODEL-WISE AVERAGE
 # ============================================================
 
-st.subheader("📊 Average Performance by Model")
+st.subheader("Average Performance by Model")
 
 
 model_summary = (
@@ -373,7 +373,7 @@ st.dataframe(
 # MODEL MAPE CHART
 # ============================================================
 
-st.subheader("📉 Average MAPE by Model")
+st.subheader("Average MAPE by Model")
 
 
 avg_mape = (
@@ -394,7 +394,7 @@ st.bar_chart(
 
 st.divider()
 
-st.subheader("📄 Detailed Model Results")
+st.subheader(" Detailed Model Results")
 
 
 display_df = filtered_df.copy()
@@ -428,49 +428,3 @@ st.download_button(
     mime="text/csv"
 )
 
-
-# ============================================================
-# EXPLANATION
-# ============================================================
-
-st.divider()
-
-st.subheader("🧠 How to Read This Page")
-
-st.markdown(
-    """
-    ### MAPE
-
-    **Mean Absolute Percentage Error**
-
-    Lower MAPE means the forecasts were closer to the
-    actual values in percentage terms.
-
-    ### MAE
-
-    **Mean Absolute Error**
-
-    Measures the average absolute forecasting error.
-
-    ### RMSE
-
-    **Root Mean Squared Error**
-
-    Gives greater importance to larger forecasting errors.
-
-    ### Models
-
-    - **Naive** — uses the latest observed value.
-    - **Seasonal Naive** — uses the corresponding value from
-      the previous seasonal cycle.
-    - **ARIMA** — models autoregression, differencing and
-      moving-average behavior.
-    - **SARIMA** — extends ARIMA with seasonal components.
-    - **Prophet** — models trend and seasonality using a
-      decomposable forecasting approach.
-
-    For this project, the model comparison is performed
-    separately for each insurer because different insurers
-    can have different time-series behavior.
-    """
-)

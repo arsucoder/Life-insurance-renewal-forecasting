@@ -23,7 +23,7 @@ st.set_page_config(
 # TITLE
 # ============================================================
 
-st.title("📈 Time Series Analysis")
+st.title("Time Series Analysis")
 
 st.divider()
 
@@ -120,7 +120,7 @@ ts = ts.asfreq("MS")
 # SIDEBAR
 # ============================================================
 
-st.sidebar.header("🔎 Time Series Controls")
+st.sidebar.header("Time Series Controls")
 
 
 rolling_window = st.sidebar.slider(
@@ -135,7 +135,7 @@ rolling_window = st.sidebar.slider(
 # BASIC INFORMATION
 # ============================================================
 
-st.subheader("📋 Time Series Information")
+st.subheader("Time Series Information")
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -175,7 +175,7 @@ st.divider()
 # 1. ORIGINAL TIME SERIES
 # ============================================================
 
-st.subheader("1️⃣ Monthly Renewed Premium")
+st.subheader("1. Monthly Renewed Premium")
 
 chart_df = pd.DataFrame({
     "Renewed Premium": ts
@@ -196,7 +196,7 @@ st.caption(
 # ============================================================
 
 st.subheader(
-    f"2️⃣ Rolling Mean ({rolling_window}-Month)"
+    f"2. Rolling Mean ({rolling_window}-Month)"
 )
 
 rolling_mean = ts.rolling(
@@ -212,20 +212,13 @@ st.line_chart(
     rolling_df
 )
 
-st.info(
-    """
-    The rolling mean smooths short-term fluctuations.
-    If the rolling mean moves consistently upward or downward,
-    it indicates an underlying trend.
-    """
-)
 
 
 # ============================================================
 # 3. MONTHLY SEASONALITY
 # ============================================================
 
-st.subheader("3️⃣ Monthly Seasonality")
+st.subheader("3. Monthly Seasonality")
 
 seasonal_df = pd.DataFrame({
     "month": ts.index.month,
@@ -254,17 +247,14 @@ st.bar_chart(
     monthly_avg
 )
 
-st.caption(
-    "Higher values in particular months may indicate recurring "
-    "seasonal behavior."
-)
+
 
 
 # ============================================================
 # 4. MONTH-OVER-MONTH CHANGE
 # ============================================================
 
-st.subheader("4️⃣ Month-over-Month Change")
+st.subheader("4. Month-over-Month Change")
 
 mom_change = ts.pct_change() * 100
 
@@ -281,7 +271,7 @@ st.line_chart(
 # 5. DIFFERENCING
 # ============================================================
 
-st.subheader("5️⃣ First-Order Differencing")
+st.subheader("5. First-Order Differencing")
 
 diff_ts = ts.diff().dropna()
 
@@ -294,169 +284,15 @@ st.line_chart(
     diff_df["First Difference"]
 )
 
-st.info(
-    """
-    Differencing removes much of the trend from a time series.
-    ARIMA/SARIMA models commonly use differencing to make a
-    series more stationary.
-    """
-)
 
 
-# ============================================================
-# 6. STATIONARITY - ADF TEST
-# ============================================================
-
-st.subheader("6️⃣ Stationarity Test — Augmented Dickey-Fuller")
-
-try:
-
-    adf_original = adfuller(
-        ts.dropna()
-    )
-
-    adf_diff = adfuller(
-        diff_ts.dropna()
-    )
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-
-        st.markdown("### Original Series")
-
-        st.write(
-            f"ADF Statistic: "
-            f"**{adf_original[0]:.4f}**"
-        )
-
-        st.write(
-            f"P-value: "
-            f"**{adf_original[1]:.4f}**"
-        )
-
-        if adf_original[1] < 0.05:
-
-            st.success(
-                "Likely stationary (p < 0.05)"
-            )
-
-        else:
-
-            st.warning(
-                "Likely non-stationary (p ≥ 0.05)"
-            )
-
-    with col2:
-
-        st.markdown("### First Difference")
-
-        st.write(
-            f"ADF Statistic: "
-            f"**{adf_diff[0]:.4f}**"
-        )
-
-        st.write(
-            f"P-value: "
-            f"**{adf_diff[1]:.4f}**"
-        )
-
-        if adf_diff[1] < 0.05:
-
-            st.success(
-                "Likely stationary (p < 0.05)"
-            )
-
-        else:
-
-            st.warning(
-                "Still likely non-stationary"
-            )
-
-except Exception as e:
-
-    st.warning(
-        f"ADF test could not be calculated: {e}"
-    )
-
-
-# ============================================================
-# 7. ACF
-# ============================================================
-
-st.subheader("7️⃣ Autocorrelation — ACF")
-
-fig, ax = plt.subplots(
-    figsize=(12, 4)
-)
-
-plot_acf(
-    ts.dropna(),
-    lags=min(20, len(ts)//2 - 1),
-    ax=ax
-)
-
-ax.set_title(
-    "Autocorrelation Function"
-)
-
-st.pyplot(
-    fig,
-    clear_figure=True
-)
-
-
-st.caption(
-    """
-    ACF shows how strongly the current value is related
-    to previous observations. Strong spikes at particular
-    lags can indicate time-series dependence or seasonality.
-    """
-)
-
-
-# ============================================================
-# 8. PACF
-# ============================================================
-
-st.subheader("8️⃣ Partial Autocorrelation — PACF")
-
-fig, ax = plt.subplots(
-    figsize=(12, 4)
-)
-
-plot_pacf(
-    ts.dropna(),
-    lags=min(20, len(ts)//2 - 1),
-    ax=ax,
-    method="ywm"
-)
-
-ax.set_title(
-    "Partial Autocorrelation Function"
-)
-
-st.pyplot(
-    fig,
-    clear_figure=True
-)
-
-
-st.caption(
-    """
-    PACF helps identify the relationship between an observation
-    and its lagged values after removing the effect of
-    intermediate lags. It is useful when selecting ARIMA/SARIMA
-    parameters.
-    """
-)
 
 
 # ============================================================
 # 9. TIME SERIES STATISTICS
 # ============================================================
 
-st.subheader("9️⃣ Time Series Statistics")
+st.subheader("6. Time Series Statistics")
 
 stats_df = pd.DataFrame({
     "Metric": [
@@ -498,53 +334,13 @@ st.dataframe(
 st.divider()
 
 
-# ============================================================
-# 10. INTERPRETATION
-# ============================================================
-
-st.subheader("🧠 Time Series Interpretation")
-
-st.markdown(
-    """
-    ### What we are checking
-
-    **Trend**
-    - Does renewed premium increase or decrease over time?
-
-    **Seasonality**
-    - Do certain months repeatedly show higher or lower
-      renewal premiums?
-
-    **Stationarity**
-    - Does the statistical behavior of the series remain
-      relatively stable over time?
-
-    **Autocorrelation**
-    - Does the current month's premium depend on previous
-      months?
-
-    **Differencing**
-    - Can we remove trend and make the series more suitable
-      for ARIMA/SARIMA?
-
-    ### Connection with our forecasting models
-
-    | Model | What it uses |
-    |---|---|
-    | Naive | Previous observation |
-    | Seasonal Naive | Previous seasonal observation |
-    | ARIMA | Autoregression + differencing + moving average |
-    | SARIMA | ARIMA + seasonality |
-    | Prophet | Trend + seasonality + changepoints |
-    """
-)
 
 
 # ============================================================
 # DOWNLOAD
 # ============================================================
 
-st.divider()
+
 
 csv_data = df.to_csv(
     index=False

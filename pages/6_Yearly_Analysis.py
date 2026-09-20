@@ -18,7 +18,7 @@ st.set_page_config(
 # TITLE
 # ============================================================
 
-st.title("📅 Yearly Insurance Analysis")
+st.title("Yearly Insurance Analysis")
 
 st.divider()
 
@@ -126,7 +126,7 @@ df = df.reset_index(drop=True)
 # SIDEBAR
 # ============================================================
 
-st.sidebar.header("🔎 Yearly Filters")
+st.sidebar.header(" Yearly Filters")
 
 
 # ============================================================
@@ -220,7 +220,7 @@ average_premium = (
 # KPI CARDS
 # ============================================================
 
-st.subheader("📊 Key Performance Indicators")
+st.subheader("Key Performance Indicators")
 
 
 col1, col2, col3, col4 = st.columns(4)
@@ -292,7 +292,7 @@ st.divider()
 # YEARLY RENEWAL RATE
 # ============================================================
 
-st.subheader("📈 Renewal Rate by Financial Year")
+st.subheader(" 1. Renewal Rate by Financial Year")
 
 
 renewal_chart = yearly_df[
@@ -322,7 +322,7 @@ st.line_chart(
 # PREMIUM TREND
 # ============================================================
 
-st.subheader("💰 Yearly Premium Performance")
+st.subheader(" 2. Yearly Premium Performance")
 
 
 premium_chart = yearly_df[
@@ -362,7 +362,7 @@ st.line_chart(
 # POLICY TREND
 # ============================================================
 
-st.subheader("📋 Yearly Policy Performance")
+st.subheader(" 3. Yearly Policy Performance")
 
 
 policy_chart = yearly_df[
@@ -399,7 +399,7 @@ st.line_chart(
 # YEARLY RENEWAL RATE BAR CHART
 # ============================================================
 
-st.subheader("📊 Yearly Renewal Rate")
+st.subheader(" 4. Yearly Renewal Rate")
 
 
 bar_chart = yearly_df[
@@ -429,7 +429,7 @@ st.bar_chart(
 # YEAR-OVER-YEAR GROWTH
 # ============================================================
 
-st.subheader("📈 Year-over-Year Growth")
+st.subheader(" 5. Year-over-Year Growth")
 
 
 growth_df = df.copy()
@@ -506,7 +506,7 @@ if len(df) > 1:
 
     worst_year = df.loc[worst_idx]
 
-    st.subheader("🏆 Yearly Performance Highlights")
+    st.subheader("Yearly Performance Highlights")
 
     col1, col2 = st.columns(2)
 
@@ -553,7 +553,7 @@ if len(df) > 1:
 
 st.divider()
 
-st.subheader("📄 Yearly Data")
+st.subheader("Yearly Data")
 
 
 display_df = df.copy()

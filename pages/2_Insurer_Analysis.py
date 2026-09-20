@@ -18,7 +18,7 @@ st.set_page_config(
 # TITLE
 # ============================================================
 
-st.title("🏢 Insurer Analysis")
+st.title("Insurer Analysis")
 
 
 st.divider()
@@ -190,7 +190,7 @@ if insurer_df.empty:
 # ============================================================
 
 st.header(
-    f"📌 {selected_insurer}"
+    f"{selected_insurer}"
 )
 
 
@@ -321,7 +321,7 @@ st.divider()
 # MONTHLY RENEWAL RATE
 # ============================================================
 
-st.subheader("📈 Monthly Renewal Rate")
+st.subheader("Monthly Renewal Rate")
 
 
 renewal_chart = insurer_df[
@@ -343,7 +343,7 @@ st.line_chart(
 # PREMIUM TREND
 # ============================================================
 
-st.subheader("💰 Monthly Premium Performance")
+st.subheader("Monthly Premium Performance")
 
 
 premium_chart = insurer_df[
@@ -378,7 +378,7 @@ st.line_chart(
 # POLICY TREND
 # ============================================================
 
-st.subheader("📋 Monthly Policy Performance")
+st.subheader("Monthly Policy Performance")
 
 
 policy_chart = insurer_df[
@@ -410,7 +410,7 @@ st.line_chart(
 # RENEWAL RATE BY MONTH
 # ============================================================
 
-st.subheader("📊 Monthly Renewal Rate")
+st.subheader("Monthly Renewal Rate")
 
 
 rate_chart = insurer_df[
@@ -489,7 +489,7 @@ with col2:
 
 st.divider()
 
-st.subheader("📄 Monthly Insurer Data")
+st.subheader("Monthly Insurer Data")
 
 
 display_df = insurer_df.copy()

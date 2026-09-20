@@ -181,7 +181,7 @@ for column in [
 # ============================================================
 
 st.title(
-    "📊 Life Insurance Renewal Intelligence"
+    " Life Insurance Renewal Intelligence"
 )
 
 
@@ -226,7 +226,7 @@ else:
 # DATASET OVERVIEW
 # ============================================================
 
-st.subheader("📁 Dataset Overview")
+st.subheader("Dataset Overview")
 
 col1, col2, col3 = st.columns(3)
 
@@ -314,7 +314,7 @@ else:
 # KPI CARDS
 # ============================================================
 
-st.subheader("📌 Key Performance Indicators")
+st.subheader("Key Performance Indicators")
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -350,12 +350,12 @@ with col4:
         f"₹{renewed_premium / 1e9:.2f} B"
     )
 
-
+st.divider()
 # ============================================================
 # PREMIUM OVERVIEW
 # ============================================================
 
-st.subheader("💰 Premium Overview")
+st.subheader("Premium Overview")
 
 col1, col2, col3 = st.columns(3)
 
@@ -383,12 +383,12 @@ with col3:
         f"{premium_renewal_rate:.2f}%"
     )
 
-
+st.divider()
 # ============================================================
 # HISTORICAL PERIOD
 # ============================================================
 
-st.subheader("📅 Historical Period")
+st.subheader("Historical Period")
 
 col1, col2 = st.columns(2)
 
@@ -424,12 +424,12 @@ with col2:
             end_date.strftime("%B %Y")
         )
 
-
+st.divider()
 # ============================================================
 # MONTHLY RENEWED PREMIUM
 # ============================================================
 
-st.subheader("📈 Monthly Renewed Premium")
+st.subheader("Monthly Renewed Premium")
 
 
 monthly_premium = (
@@ -481,7 +481,7 @@ st.plotly_chart(
 # MONTHLY RENEWAL RATE
 # ============================================================
 
-st.subheader("🔄 Monthly Renewal Rate")
+st.subheader("Monthly Renewal Rate")
 
 
 monthly_rate = (
@@ -543,7 +543,7 @@ st.plotly_chart(
 # ============================================================
 
 st.subheader(
-    "🏢 Insurer-wise Renewed Premium"
+    "Insurer-wise Renewed Premium"
 )
 
 
@@ -602,7 +602,7 @@ st.plotly_chart(
 # ============================================================
 
 st.subheader(
-    "🔄 Insurer-wise Renewal Rate"
+    "Insurer-wise Renewal Rate"
 )
 
 
@@ -670,7 +670,7 @@ st.plotly_chart(
 # INSURER SUMMARY
 # ============================================================
 
-st.subheader("📋 Insurer Summary")
+st.subheader("Insurer Summary")
 
 
 insurer_summary = (

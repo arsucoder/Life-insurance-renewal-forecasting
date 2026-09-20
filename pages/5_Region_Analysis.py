@@ -18,7 +18,7 @@ st.set_page_config(
 # TITLE
 # ============================================================
 
-st.title("🌍 Region Analysis")
+st.title("Region Analysis")
 
 
 
@@ -113,7 +113,7 @@ df = df.sort_values(
 # SIDEBAR
 # ============================================================
 
-st.sidebar.header("🔎 Region Filters")
+st.sidebar.header(" Region Filters")
 
 
 # ============================================================
@@ -184,7 +184,7 @@ if region_df.empty:
 # ============================================================
 
 st.header(
-    f"📌 {selected_region}"
+    f"{selected_region} Region Analysis"
 )
 
 st.caption(
@@ -304,7 +304,7 @@ st.divider()
 # MONTHLY RENEWAL RATE
 # ============================================================
 
-st.subheader("📈 Monthly Renewal Rate")
+st.subheader(" 1. Monthly Renewal Rate")
 
 renewal_chart = region_df[
     ["collection_month", "renewal_rate"]
@@ -323,7 +323,7 @@ st.line_chart(
 # PREMIUM TREND
 # ============================================================
 
-st.subheader("💰 Monthly Premium Performance")
+st.subheader(" 2. Monthly Premium Performance")
 
 premium_chart = region_df[
     [
@@ -351,7 +351,7 @@ st.line_chart(premium_chart)
 # POLICY TREND
 # ============================================================
 
-st.subheader("📋 Monthly Policy Performance")
+st.subheader(" 3. Monthly Policy Performance")
 
 policy_chart = region_df[
     [
@@ -377,7 +377,7 @@ st.line_chart(policy_chart)
 # RENEWAL RATE BAR CHART
 # ============================================================
 
-st.subheader("📊 Renewal Rate by Month")
+st.subheader(" 4. Renewal Rate by Month")
 
 rate_chart = region_df[
     ["collection_month", "renewal_rate"]
@@ -396,7 +396,7 @@ st.bar_chart(
 # PERFORMANCE HIGHLIGHTS
 # ============================================================
 
-st.subheader("📅 Performance Highlights")
+st.subheader(" Performance Highlights")
 
 best_idx = region_df[
     "renewal_rate"
@@ -449,7 +449,7 @@ with col2:
 
 st.divider()
 
-st.subheader("🔄 Region Comparison")
+st.subheader(" Region Comparison")
 
 comparison = (
     df.groupby("region")
@@ -539,7 +539,7 @@ st.dataframe(
 
 st.divider()
 
-st.subheader("📄 Monthly Regional Data")
+st.subheader(" Monthly Regional Data")
 
 display_df = region_df.copy()
 
