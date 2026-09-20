@@ -22,7 +22,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+from evaluation import calculate_metrics
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from prophet import Prophet
@@ -55,31 +55,16 @@ SEASONAL_PERIOD = 12
 # METRICS
 # ================================================================
 
-def calculate_metrics(actual, predicted):
-
-    actual = np.array(actual, dtype=float)
-    predicted = np.array(predicted, dtype=float)
-
-    mae = mean_absolute_error(actual, predicted)
-
-    rmse = np.sqrt(
-        mean_squared_error(actual, predicted)
+def metric_values(actual, predicted):
+    """Return required metrics plus MAPE as an additional diagnostic."""
+    metrics = calculate_metrics(actual, predicted)
+    return (
+        metrics["MAE"],
+        metrics["RMSE"],
+        metrics["WAPE"],
+        metrics["Bias"],
+        metrics["MAPE"],
     )
-
-    # Avoid division by zero
-    non_zero = actual != 0
-
-    if np.any(non_zero):
-        mape = np.mean(
-            np.abs(
-                (actual[non_zero] - predicted[non_zero])
-                / actual[non_zero]
-            )
-        ) * 100
-    else:
-        mape = np.nan
-
-    return mae, rmse, mape
 
 
 # ================================================================
@@ -252,7 +237,7 @@ def tune_sarima(
                 seasonal_order
             )
 
-            mae, rmse, mape = calculate_metrics(
+            mae, rmse, wape, bias, mape = metric_values(
                 validation,
                 prediction
             )
@@ -262,7 +247,9 @@ def tune_sarima(
                 "seasonal_order": seasonal_order,
                 "MAE": mae,
                 "RMSE": rmse,
-                "MAPE": mape
+                            "WAPE": wape,
+            "Bias": bias,
+            "MAPE": mape
             })
 
         except Exception as e:
@@ -278,7 +265,7 @@ def tune_sarima(
         return (1, 1, 1), (1, 0, 0, 12)
 
     results_df = results_df.sort_values(
-        "MAPE"
+        "WAPE"
     )
 
     best = results_df.iloc[0]
@@ -409,7 +396,7 @@ def tune_prophet(
                 ]
             )
 
-            mae, rmse, mape = calculate_metrics(
+            mae, rmse, wape, bias, mape = metric_values(
                 validation,
                 prediction
             )
@@ -430,7 +417,9 @@ def tune_prophet(
                     ],
                 "MAE": mae,
                 "RMSE": rmse,
-                "MAPE": mape
+                            "WAPE": wape,
+            "Bias": bias,
+            "MAPE": mape
             })
 
         except Exception as e:
@@ -587,7 +576,7 @@ def main():
             test
         )
 
-        mae, rmse, mape = calculate_metrics(
+        mae, rmse, wape, bias, mape = metric_values(
             test,
             naive_prediction
         )
@@ -597,6 +586,8 @@ def main():
             "Model": "Naive",
             "MAE": mae,
             "RMSE": rmse,
+                        "WAPE": wape,
+            "Bias": bias,
             "MAPE": mape
         })
 
@@ -616,7 +607,7 @@ def main():
             )
         )
 
-        mae, rmse, mape = calculate_metrics(
+        mae, rmse, wape, bias, mape = metric_values(
             test,
             seasonal_prediction
         )
@@ -626,6 +617,8 @@ def main():
             "Model": "Seasonal Naive",
             "MAE": mae,
             "RMSE": rmse,
+                        "WAPE": wape,
+            "Bias": bias,
             "MAPE": mape
         })
 
@@ -643,7 +636,7 @@ def main():
             (1, 1, 1)
         )
 
-        mae, rmse, mape = calculate_metrics(
+        mae, rmse, wape, bias, mape = metric_values(
             test,
             arima_prediction
         )
@@ -653,6 +646,8 @@ def main():
             "Model": "ARIMA",
             "MAE": mae,
             "RMSE": rmse,
+                        "WAPE": wape,
+            "Bias": bias,
             "MAPE": mape
         })
 
@@ -686,7 +681,7 @@ def main():
             )
         )
 
-        mae, rmse, mape = calculate_metrics(
+        mae, rmse, wape, bias, mape = metric_values(
             test,
             tuned_sarima_prediction
         )
@@ -696,6 +691,8 @@ def main():
             "Model": "Tuned SARIMA",
             "MAE": mae,
             "RMSE": rmse,
+                        "WAPE": wape,
+            "Bias": bias,
             "MAPE": mape
         })
 
@@ -717,7 +714,7 @@ def main():
             )
         )
 
-        mae, rmse, mape = calculate_metrics(
+        mae, rmse, wape, bias, mape = metric_values(
             test,
             default_prophet_prediction
         )
@@ -727,6 +724,8 @@ def main():
             "Model": "Default Prophet",
             "MAE": mae,
             "RMSE": rmse,
+                        "WAPE": wape,
+            "Bias": bias,
             "MAPE": mape
         })
 
@@ -764,7 +763,7 @@ def main():
             )
         )
 
-        mae, rmse, mape = calculate_metrics(
+        mae, rmse, wape, bias, mape = metric_values(
             test,
             tuned_prophet_prediction
         )
@@ -774,6 +773,8 @@ def main():
             "Model": "Tuned Prophet",
             "MAE": mae,
             "RMSE": rmse,
+                        "WAPE": wape,
+            "Bias": bias,
             "MAPE": mape
         })
 
@@ -791,7 +792,7 @@ def main():
 
     # Sort insurer + MAPE
     results_df = results_df.sort_values(
-        ["Insurer", "MAPE"]
+        ["Insurer", "WAPE"]
     )
 
     # ============================================================
@@ -815,7 +816,7 @@ def main():
     wide = results_df.pivot(
         index="Insurer",
         columns="Model",
-        values="MAPE"
+        values="WAPE"
     )
 
     # ------------------------------------------------------------
@@ -824,17 +825,17 @@ def main():
 
     wide = wide.rename(
         columns={
-            "Naive": "Naive MAPE",
+            "Naive": "Naive WAPE",
             "Seasonal Naive":
-                "Seasonal Naive MAPE",
+                "Seasonal Naive WAPE",
             "ARIMA":
-                "ARIMA MAPE",
+                "ARIMA WAPE",
             "Tuned SARIMA":
-                "Tuned SARIMA MAPE",
+                "Tuned SARIMA WAPE",
             "Default Prophet":
-                "Default Prophet MAPE",
+                "Default Prophet WAPE",
             "Tuned Prophet":
-                "Tuned Prophet MAPE"
+                "Tuned Prophet WAPE"
         }
     )
 
@@ -843,7 +844,7 @@ def main():
     # ------------------------------------------------------------
 
     model_columns = [
-        "Naive MAPE",
+        "Naive WAPE",
         "Seasonal Naive MAPE",
         "ARIMA MAPE",
         "Tuned SARIMA MAPE",
@@ -864,7 +865,7 @@ def main():
         )
     )
 
-    wide["Best Test MAPE"] = wide[
+    wide["Best Test WAPE"] = wide[
         model_columns
     ].min(axis=1)
 
@@ -877,7 +878,7 @@ def main():
     ]
 
     wide = wide.sort_values(
-        "Best Test MAPE"
+        "Best Test WAPE"
     )
 
     # Save
@@ -908,8 +909,8 @@ def main():
         .round(2)
     )
 
-    display_df["MAPE"] = (
-        display_df["MAPE"]
+    display_df["WAPE"] = (
+        display_df["WAPE"]
         .round(4)
     )
 
