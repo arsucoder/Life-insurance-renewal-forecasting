@@ -184,14 +184,6 @@ st.title(
     "📊 Life Insurance Renewal Intelligence"
 )
 
-st.markdown(
-    """
-    ### Overview Dashboard
-
-    Historical analysis of life insurance renewal policies,
-    premiums and renewal performance across insurers.
-    """
-)
 
 st.divider()
 

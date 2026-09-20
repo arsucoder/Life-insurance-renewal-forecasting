@@ -20,13 +20,6 @@ st.set_page_config(
 
 st.title("📅 Yearly Insurance Analysis")
 
-st.markdown(
-    """
-    Analyze yearly policy volume, premium collection, and
-    renewal performance across financial years.
-    """
-)
-
 st.divider()
 
 

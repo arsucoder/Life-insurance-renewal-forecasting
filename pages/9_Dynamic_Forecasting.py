@@ -20,13 +20,6 @@ st.set_page_config(
 
 st.title("🔮 Dynamic Insurance Premium Forecasting")
 
-st.markdown(
-    """
-    Select an insurer, choose how many future months you want
-    to forecast, and generate a dynamic renewal-premium forecast.
-    """
-)
-
 st.divider()
 
 # ============================================================
@@ -271,13 +264,6 @@ with col3:
 
 with col4:
     st.metric("Selected Model", actual_model)
-
-st.info(
-    f"""
-    Forecasting **{selected_insurer}** for the next
-    **{forecast_months} months** using **{actual_model}**.
-    """
-)
 
 # ============================================================
 # FORECAST FUNCTION

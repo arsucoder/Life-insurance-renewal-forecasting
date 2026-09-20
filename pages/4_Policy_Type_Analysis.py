@@ -20,12 +20,7 @@ st.set_page_config(
 
 st.title("📋 Policy Type Analysis")
 
-st.markdown(
-    """
-    Analyze policy volume, premium performance, and renewal
-    behavior across different policy types.
-    """
-)
+
 
 st.divider()
 

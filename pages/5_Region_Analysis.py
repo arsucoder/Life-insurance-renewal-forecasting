@@ -20,12 +20,7 @@ st.set_page_config(
 
 st.title("🌍 Region Analysis")
 
-st.markdown(
-    """
-    Analyze policy renewals, premium performance, and renewal
-    behavior across different geographical regions.
-    """
-)
+
 
 st.divider()
 

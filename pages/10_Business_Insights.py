@@ -10,11 +10,7 @@ st.set_page_config(
 )
 
 st.title("💡 Business Insights")
-st.caption(
-    "Business-level analysis of insurance renewal performance, "
-    "historical trends and forecast expectations."
-)
-
+st.divider()
 # ============================================================
 # FILE PATHS
 # ============================================================
