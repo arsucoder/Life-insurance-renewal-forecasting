@@ -24,7 +24,8 @@ st.title("🤖 Forecasting Model Comparison")
 st.markdown(
     """
     Compare the forecasting performance of different time-series
-    models across all insurers using MAE, RMSE and MAPE.
+    models across all insurers using WAPE, MAE, RMSE and Bias.
+    MAPE is retained as an additional diagnostic metric.
     """
 )
 
@@ -65,6 +66,8 @@ required_columns = [
     "Model",
     "MAE",
     "RMSE",
+    "WAPE",
+    "Bias",
     "MAPE"
 ]
 
@@ -94,7 +97,7 @@ if missing:
 # CLEAN DATA
 # ============================================================
 
-for col in ["MAE", "RMSE", "MAPE"]:
+for col in ["MAE", "RMSE", "WAPE", "Bias", "MAPE"]:
 
     df[col] = pd.to_numeric(
         df[col],
@@ -103,7 +106,7 @@ for col in ["MAE", "RMSE", "MAPE"]:
 
 
 df = df.dropna(
-    subset=["MAPE"]
+    subset=["WAPE", "MAE", "RMSE", "Bias"]
 )
 
 
@@ -139,7 +142,7 @@ selected_models = st.sidebar.multiselect(
 
 metric = st.sidebar.selectbox(
     "Performance Metric",
-    ["MAPE", "MAE", "RMSE"]
+    ["WAPE", "MAE", "RMSE", "Bias"]
 )
 
 
@@ -285,12 +288,12 @@ else:
 # MAPE COMPARISON
 # ============================================================
 
-st.subheader("🎯 MAPE Comparison")
+st.subheader("🎯 WAPE Comparison")
 
 mape_df = filtered_df.pivot_table(
     index="Insurer",
     columns="Model",
-    values="MAPE",
+    values="WAPE",
     aggfunc="mean"
 )
 
@@ -309,16 +312,18 @@ st.subheader("🏆 Best Model by Insurer")
 
 best_models = (
     df.loc[
-        df.groupby("Insurer")["MAPE"]
+        df.groupby("Insurer")["WAPE"]
         .idxmin()
     ]
     [
         [
             "Insurer",
             "Model",
-            "MAPE",
+            "WAPE",
+            "Bias",
             "MAE",
-            "RMSE"
+            "RMSE",
+            "MAPE"
         ]
     ]
     .sort_values("MAPE")
@@ -329,7 +334,8 @@ best_models = best_models.rename(
     columns={
         "Insurer": "Insurer",
         "Model": "Best Model",
-        "MAPE": "Test MAPE (%)",
+        "WAPE": "Test WAPE (%)",
+        "Bias": "Bias",
         "MAE": "MAE",
         "RMSE": "RMSE"
     }
@@ -355,9 +361,11 @@ model_summary = (
     .agg(
         Average_MAE=("MAE", "mean"),
         Average_RMSE=("RMSE", "mean"),
+        Average_WAPE=("WAPE", "mean"),
+        Average_Bias=("Bias", "mean"),
         Average_MAPE=("MAPE", "mean")
     )
-    .sort_values("Average_MAPE")
+    .sort_values("Average_WAPE")
 )
 
 
@@ -365,6 +373,8 @@ model_summary = model_summary.rename(
     columns={
         "Average_MAE": "Average MAE",
         "Average_RMSE": "Average RMSE",
+        "Average_WAPE": "Average WAPE (%)",
+        "Average_Bias": "Average Bias",
         "Average_MAPE": "Average MAPE (%)"
     }
 )
@@ -380,11 +390,11 @@ st.dataframe(
 # MODEL MAPE CHART
 # ============================================================
 
-st.subheader("📉 Average MAPE by Model")
+st.subheader("📉 Average WAPE by Model")
 
 
 avg_mape = (
-    df.groupby("Model")["MAPE"]
+    df.groupby("Model")["WAPE"]
     .mean()
     .sort_values()
 )
