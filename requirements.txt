@@ -1,7 +1,11 @@
+streamlit
 pandas
 numpy
-statsmodels
-scikit-learn
-prophet
-streamlit
 matplotlib
+seaborn
+scikit-learn
+statsmodels
+prophet
+plotly
+google-genai
+duckdb
