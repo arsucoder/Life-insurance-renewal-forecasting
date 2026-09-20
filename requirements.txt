@@ -1,3 +1,7 @@
 pandas
 numpy
 statsmodels
+scikit-learn
+prophet
+streamlit
+matplotlib
