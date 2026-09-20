@@ -248,9 +248,16 @@ col1, col2, col3, col4 = (
 )
 
 
-best_row = filtered_df.loc[
-    filtered_df[metric].idxmin()
-]
+if metric == "Bias":
+    best_row = filtered_df.loc[
+        filtered_df["Bias"].abs().idxmin()
+    ]
+    metric_label = "Closest Bias to Zero"
+else:
+    best_row = filtered_df.loc[
+        filtered_df[metric].idxmin()
+    ]
+    metric_label = f"Lowest {metric}"
 
 
 with col1:
@@ -272,7 +279,7 @@ with col2:
 with col3:
 
     st.metric(
-        f"Lowest {metric}",
+        metric_label,
         f"{best_row[metric]:.2f}"
     )
 
@@ -287,6 +294,92 @@ with col4:
 
 st.divider()
 
+# ============================================================
+# BACKTESTING METHODOLOGY
+# ============================================================
+
+st.subheader(
+    "🧪 Time-Ordered Backtesting"
+)
+
+st.markdown(
+    """
+    The forecasting models are evaluated using a
+    **time-ordered 24 / 12 / 12 split**.
+
+    Historical observations are kept in chronological order.
+    No random train-test shuffling is used.
+    """
+)
+
+
+col1, col2, col3 = st.columns(3)
+
+
+with col1:
+
+    st.metric(
+        "Training Period",
+        "24 Months"
+    )
+
+    st.caption(
+        "Used to train the forecasting model."
+    )
+
+
+with col2:
+
+    st.metric(
+        "Validation Period",
+        "12 Months"
+    )
+
+    st.caption(
+        "Used for model / hyperparameter selection."
+    )
+
+
+with col3:
+
+    st.metric(
+        "Test Period",
+        "12 Months"
+    )
+
+    st.caption(
+        "Held-out period used for final evaluation."
+    )
+
+
+st.info(
+    """
+    **Evaluation flow**
+
+    Historical Data → 24-month Training
+    → 12-month Validation
+    → 12-month Test
+    → Forecast Test Period
+    → Compare Actual vs Predicted
+    → Calculate MAE, RMSE, WAPE, Bias and MAPE.
+    """
+)
+
+
+st.markdown(
+    """
+    ### Why time-ordered validation?
+
+    For time-series forecasting, future observations should
+    not be used to train a model before they occur.
+
+    Therefore, the project keeps earlier months for training
+    and later months for validation and testing.
+    """
+)
+
+
+st.divider()
 
 # ============================================================
 # INSURER-WISE COMPARISON

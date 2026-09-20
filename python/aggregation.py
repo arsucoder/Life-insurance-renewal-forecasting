@@ -155,7 +155,15 @@ def create_monthly_dimension_aggregation(df, dimension, output_file):
     print(f"Shape: {aggregated.shape}")
     print(aggregated.head().to_string())
 
+# --------------------------------------------------
+# 12. Monthly aggregation by duration bucket
+# --------------------------------------------------
 
+create_monthly_dimension_aggregation(
+    df,
+    "duration_bucket",
+    "data/processed/monthly_by_duration_bucket.csv"
+)
 # --------------------------------------------------
 # 8. Monthly aggregation by insurer
 # --------------------------------------------------
@@ -198,4 +206,13 @@ create_monthly_dimension_aggregation(
     "data/processed/monthly_by_region.csv"
 )
 
+# --------------------------------------------------
+# 12. Monthly aggregation by duration bucket
+# --------------------------------------------------
+
+create_monthly_dimension_aggregation(
+    df,
+    "duration_bucket",
+    "data/processed/monthly_by_duration_bucket.csv"
+)
 print("\nAggregation completed successfully.")
