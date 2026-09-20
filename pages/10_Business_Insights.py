@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("💡 Business Insights")
+st.title("Business Insights")
 st.divider()
 # ============================================================
 # FILE PATHS
@@ -75,7 +75,7 @@ overall_renewal_rate = (
     else 0
 )
 
-st.subheader("📊 Overall Business Performance")
+st.subheader("Overall Business Performance")
 
 c1, c2, c3, c4, c5 = st.columns(5)
 
@@ -115,7 +115,7 @@ st.divider()
 # INSURER SELECTOR
 # ============================================================
 
-st.subheader("🏢 Insurer Business Analysis")
+st.subheader("Insurer Business Analysis")
 
 insurers = sorted(
     monthly["insurer"].dropna().unique()
@@ -220,7 +220,7 @@ if not insurer_business.empty:
 # HISTORICAL TREND
 # ============================================================
 
-st.subheader("📈 Historical Renewal Premium")
+st.subheader("Historical Renewal Premium")
 
 chart_df = insurer_monthly[
     [
@@ -246,7 +246,7 @@ st.line_chart(
 # RENEWAL RATE
 # ============================================================
 
-st.subheader("🔄 Renewal Rate Trend")
+st.subheader("Renewal Rate Trend")
 
 rate_df = insurer_monthly[
     [
@@ -268,7 +268,7 @@ st.line_chart(
 # PREMIUM VS POLICIES
 # ============================================================
 
-st.subheader("💰 Premium vs Renewed Policies")
+st.subheader("Premium vs Renewed Policies")
 
 comparison_df = insurer_monthly[
     [
@@ -290,12 +290,12 @@ st.dataframe(
     comparison_df,
     use_container_width=True
 )
-
+st.divider()
 # ============================================================
 # AUTOMATIC BUSINESS INSIGHTS
 # ============================================================
 
-st.subheader("🧠 Key Business Insights")
+st.subheader("Key Business Insights")
 
 if not insurer_business.empty:
 
@@ -402,12 +402,12 @@ if not insurer_business.empty:
         **{volatility:.2f}%** across the forecast period.
         """
     )
-
+st.divider()
 # ============================================================
 # INSURER COMPARISON
 # ============================================================
 
-st.subheader("🏆 Insurer Comparison")
+st.subheader("Insurer Comparison")
 
 comparison_columns = [
     "Insurer",

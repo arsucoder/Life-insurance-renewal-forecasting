@@ -18,7 +18,7 @@ st.set_page_config(
 # TITLE
 # ============================================================
 
-st.title("📋 Policy Type Analysis")
+st.title("Policy Type Analysis")
 
 
 
@@ -113,7 +113,7 @@ df = df.sort_values(
 # SIDEBAR
 # ============================================================
 
-st.sidebar.header("🔎 Policy Filters")
+st.sidebar.header("Policy Filters")
 
 
 # ============================================================
@@ -184,7 +184,7 @@ if policy_df.empty:
 # ============================================================
 
 st.header(
-    f"📌 {selected_policy_type}"
+    f" {selected_policy_type} Policy"
 )
 
 st.caption(
@@ -297,7 +297,7 @@ st.divider()
 # MONTHLY RENEWAL RATE
 # ============================================================
 
-st.subheader("📈 Monthly Renewal Rate")
+st.subheader("Monthly Renewal Rate")
 
 renewal_chart = policy_df[
     ["collection_month", "renewal_rate"]
@@ -316,7 +316,7 @@ st.line_chart(
 # PREMIUM TREND
 # ============================================================
 
-st.subheader("💰 Monthly Premium Performance")
+st.subheader("Monthly Premium Performance")
 
 premium_chart = policy_df[
     [
@@ -344,7 +344,7 @@ st.line_chart(premium_chart)
 # POLICY TREND
 # ============================================================
 
-st.subheader("📋 Monthly Policy Performance")
+st.subheader("Monthly Policy Performance")
 
 policy_chart = policy_df[
     [
@@ -370,7 +370,7 @@ st.line_chart(policy_chart)
 # RENEWAL RATE BAR CHART
 # ============================================================
 
-st.subheader("📊 Renewal Rate by Month")
+st.subheader("Renewal Rate by Month")
 
 rate_chart = policy_df[
     ["collection_month", "renewal_rate"]
@@ -389,7 +389,7 @@ st.bar_chart(
 # PERFORMANCE HIGHLIGHTS
 # ============================================================
 
-st.subheader("📅 Performance Highlights")
+st.subheader("Performance Highlights")
 
 best_idx = policy_df[
     "renewal_rate"
@@ -442,7 +442,7 @@ with col2:
 
 st.divider()
 
-st.subheader("🔄 Policy Type Comparison")
+st.subheader("Policy Type Comparison")
 
 comparison = (
     df.groupby("policy_type")
@@ -532,7 +532,7 @@ st.dataframe(
 
 st.divider()
 
-st.subheader("📄 Monthly Policy Type Data")
+st.subheader("Monthly Policy Type Data")
 
 display_df = policy_df.copy()
 
