@@ -1,7 +1,8 @@
-import streamlit as st
-import pandas as pd
 import os
+
 import matplotlib.pyplot as plt
+import pandas as pd
+import streamlit as st
 
 
 # ============================================================
@@ -19,13 +20,15 @@ st.set_page_config(
 # TITLE
 # ============================================================
 
-st.title("🤖 Forecasting Model Comparison")
+st.title(
+    "🤖 Forecasting Model Comparison"
+)
 
 st.markdown(
     """
-    Compare the forecasting performance of different time-series
-    models across all insurers using WAPE, MAE, RMSE and Bias.
-    MAPE is retained as an additional diagnostic metric.
+    Compare the forecasting performance of different
+    time-series models across insurers using MAPE,
+    WAPE, MAE, RMSE and Bias.
     """
 )
 
@@ -36,13 +39,17 @@ st.divider()
 # DATA PATH
 # ============================================================
 
-DATA_FILE = "reports/all_insurers_all_models_comparison.csv"
+DATA_FILE = (
+    "reports/"
+    "all_insurers_all_models_comparison.csv"
+)
 
 
 if not os.path.exists(DATA_FILE):
 
     st.error(
-        f"Model comparison file not found:\n\n`{DATA_FILE}`"
+        f"Model comparison file not found:\n\n"
+        f"`{DATA_FILE}`"
     )
 
     st.stop()
@@ -52,29 +59,44 @@ if not os.path.exists(DATA_FILE):
 # LOAD DATA
 # ============================================================
 
-df = pd.read_csv(DATA_FILE)
+df = pd.read_csv(
+    DATA_FILE
+)
 
-df.columns = df.columns.str.strip()
+df.columns = (
+    df.columns
+    .str.strip()
+)
 
 
 # ============================================================
-# SHOW COLUMNS
+# REQUIRED COLUMNS
 # ============================================================
 
 required_columns = [
+
     "Insurer",
+
     "Model",
+
     "MAE",
+
     "RMSE",
+
     "WAPE",
+
     "Bias",
+
     "MAPE"
 ]
 
 
 missing = [
+
     col
+
     for col in required_columns
+
     if col not in df.columns
 ]
 
@@ -97,7 +119,19 @@ if missing:
 # CLEAN DATA
 # ============================================================
 
-for col in ["MAE", "RMSE", "WAPE", "Bias", "MAPE"]:
+for col in [
+
+    "MAE",
+
+    "RMSE",
+
+    "WAPE",
+
+    "Bias",
+
+    "MAPE"
+
+]:
 
     df[col] = pd.to_numeric(
         df[col],
@@ -106,7 +140,12 @@ for col in ["MAE", "RMSE", "WAPE", "Bias", "MAPE"]:
 
 
 df = df.dropna(
-    subset=["WAPE", "MAE", "RMSE", "Bias"]
+    subset=[
+        "WAPE",
+        "MAE",
+        "RMSE",
+        "Bias"
+    ]
 )
 
 
@@ -114,35 +153,51 @@ df = df.dropna(
 # SIDEBAR
 # ============================================================
 
-st.sidebar.header("🔎 Comparison Filters")
-
-
-insurers = sorted(
-    df["Insurer"].dropna().unique()
+st.sidebar.header(
+    "🔎 Comparison Filters"
 )
 
 
-selected_insurer = st.sidebar.selectbox(
-    "Select Insurer",
-    ["All Insurers"] + insurers
+insurers = sorted(
+    df["Insurer"]
+    .dropna()
+    .unique()
+)
+
+
+selected_insurer = (
+    st.sidebar.selectbox(
+        "Select Insurer",
+        ["All Insurers"] + insurers
+    )
 )
 
 
 models = sorted(
-    df["Model"].dropna().unique()
+    df["Model"]
+    .dropna()
+    .unique()
 )
 
 
-selected_models = st.sidebar.multiselect(
-    "Select Models",
-    models,
-    default=models
+selected_models = (
+    st.sidebar.multiselect(
+        "Select Models",
+        models,
+        default=models
+    )
 )
 
 
 metric = st.sidebar.selectbox(
     "Performance Metric",
-    ["WAPE", "MAE", "RMSE", "Bias"]
+    [
+        "MAPE",
+        "WAPE",
+        "MAE",
+        "RMSE",
+        "Bias"
+    ]
 )
 
 
@@ -183,10 +238,14 @@ if filtered_df.empty:
 # KPI SECTION
 # ============================================================
 
-st.subheader("📊 Model Performance Overview")
+st.subheader(
+    "📊 Model Performance Overview"
+)
 
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4 = (
+    st.columns(4)
+)
 
 
 best_row = filtered_df.loc[
@@ -239,9 +298,13 @@ st.subheader(
 
 
 pivot_df = filtered_df.pivot_table(
+
     index="Insurer",
+
     columns="Model",
+
     values=metric,
+
     aggfunc="mean"
 )
 
@@ -262,9 +325,12 @@ st.subheader(
 
 if selected_insurer != "All Insurers":
 
-    chart_df = filtered_df[
-        ["Model", metric]
-    ].set_index("Model")
+    chart_df = (
+        filtered_df[
+            ["Model", metric]
+        ]
+        .set_index("Model")
+    )
 
     st.bar_chart(
         chart_df
@@ -285,15 +351,48 @@ else:
 
 
 # ============================================================
+# WAPE COMPARISON
+# ============================================================
+
+st.subheader(
+    "📊 WAPE Comparison"
+)
+
+
+wape_df = filtered_df.pivot_table(
+
+    index="Insurer",
+
+    columns="Model",
+
+    values="WAPE",
+
+    aggfunc="mean"
+)
+
+
+st.bar_chart(
+    wape_df
+)
+
+
+# ============================================================
 # MAPE COMPARISON
 # ============================================================
 
-st.subheader("🎯 WAPE Comparison")
+st.subheader(
+    "📊 MAPE Comparison"
+)
+
 
 mape_df = filtered_df.pivot_table(
+
     index="Insurer",
+
     columns="Model",
-    values="WAPE",
+
+    values="MAPE",
+
     aggfunc="mean"
 )
 
@@ -307,23 +406,27 @@ st.bar_chart(
 # BEST MODEL PER INSURER
 # ============================================================
 
-st.subheader("🏆 Best Model by Insurer")
+st.subheader(
+    "🏆 Best Model by Insurer"
+)
 
+
+# Keep the project's existing MAPE-based
+# model-selection methodology here.
 
 best_models = (
     df.loc[
-        df.groupby("Insurer")["WAPE"]
+        df.groupby("Insurer")["MAPE"]
         .idxmin()
-    ]
-    [
+    ][
         [
             "Insurer",
             "Model",
+            "MAPE",
             "WAPE",
             "Bias",
             "MAE",
-            "RMSE",
-            "MAPE"
+            "RMSE"
         ]
     ]
     .sort_values("MAPE")
@@ -332,12 +435,15 @@ best_models = (
 
 best_models = best_models.rename(
     columns={
-        "Insurer": "Insurer",
-        "Model": "Best Model",
-        "WAPE": "Test WAPE (%)",
-        "Bias": "Bias",
-        "MAE": "MAE",
-        "RMSE": "RMSE"
+
+        "Model":
+            "Best Model",
+
+        "MAPE":
+            "Test MAPE (%)",
+
+        "WAPE":
+            "Test WAPE (%)"
     }
 )
 
@@ -353,29 +459,66 @@ st.dataframe(
 # MODEL-WISE AVERAGE
 # ============================================================
 
-st.subheader("📊 Average Performance by Model")
+st.subheader(
+    "📊 Average Performance by Model"
+)
 
 
 model_summary = (
+
     df.groupby("Model")
+
     .agg(
-        Average_MAE=("MAE", "mean"),
-        Average_RMSE=("RMSE", "mean"),
-        Average_WAPE=("WAPE", "mean"),
-        Average_Bias=("Bias", "mean"),
-        Average_MAPE=("MAPE", "mean")
+
+        Average_MAE=(
+            "MAE",
+            "mean"
+        ),
+
+        Average_RMSE=(
+            "RMSE",
+            "mean"
+        ),
+
+        Average_WAPE=(
+            "WAPE",
+            "mean"
+        ),
+
+        Average_Bias=(
+            "Bias",
+            "mean"
+        ),
+
+        Average_MAPE=(
+            "MAPE",
+            "mean"
+        )
     )
-    .sort_values("Average_WAPE")
+
+    .sort_values(
+        "Average_MAPE"
+    )
 )
 
 
 model_summary = model_summary.rename(
     columns={
-        "Average_MAE": "Average MAE",
-        "Average_RMSE": "Average RMSE",
-        "Average_WAPE": "Average WAPE (%)",
-        "Average_Bias": "Average Bias",
-        "Average_MAPE": "Average MAPE (%)"
+
+        "Average_MAE":
+            "Average MAE",
+
+        "Average_RMSE":
+            "Average RMSE",
+
+        "Average_WAPE":
+            "Average WAPE (%)",
+
+        "Average_Bias":
+            "Average Bias",
+
+        "Average_MAPE":
+            "Average MAPE (%)"
     }
 )
 
@@ -387,15 +530,44 @@ st.dataframe(
 
 
 # ============================================================
-# MODEL MAPE CHART
+# AVERAGE WAPE
 # ============================================================
 
-st.subheader("📉 Average WAPE by Model")
+st.subheader(
+    "📉 Average WAPE by Model"
+)
+
+
+avg_wape = (
+
+    df.groupby("Model")["WAPE"]
+
+    .mean()
+
+    .sort_values()
+)
+
+
+st.bar_chart(
+    avg_wape
+)
+
+
+# ============================================================
+# AVERAGE MAPE
+# ============================================================
+
+st.subheader(
+    "📉 Average MAPE by Model"
+)
 
 
 avg_mape = (
-    df.groupby("Model")["WAPE"]
+
+    df.groupby("Model")["MAPE"]
+
     .mean()
+
     .sort_values()
 )
 
@@ -411,14 +583,20 @@ st.bar_chart(
 
 st.divider()
 
-st.subheader("📄 Detailed Model Results")
+
+st.subheader(
+    "📄 Detailed Model Results"
+)
 
 
 display_df = filtered_df.copy()
 
 
 display_df = display_df.sort_values(
-    ["Insurer", "MAPE"]
+    [
+        "Insurer",
+        "MAPE"
+    ]
 )
 
 
@@ -433,15 +611,21 @@ st.dataframe(
 # DOWNLOAD
 # ============================================================
 
-csv_data = filtered_df.to_csv(
-    index=False
-).encode("utf-8")
+csv_data = (
+    filtered_df
+    .to_csv(index=False)
+    .encode("utf-8")
+)
 
 
 st.download_button(
+
     label="⬇️ Download Model Comparison",
+
     data=csv_data,
+
     file_name="model_comparison.csv",
+
     mime="text/csv"
 )
 
@@ -452,7 +636,11 @@ st.download_button(
 
 st.divider()
 
-st.subheader("🧠 How to Read This Page")
+
+st.subheader(
+    "🧠 How to Read This Page"
+)
+
 
 st.markdown(
     """
@@ -460,8 +648,15 @@ st.markdown(
 
     **Mean Absolute Percentage Error**
 
-    Lower MAPE means the forecasts were closer to the
-    actual values in percentage terms.
+    Measures average percentage error.
+    Lower values indicate smaller percentage errors.
+
+    ### WAPE
+
+    **Weighted Absolute Percentage Error**
+
+    Measures total absolute forecasting error
+    relative to total actual values.
 
     ### MAE
 
@@ -475,19 +670,26 @@ st.markdown(
 
     Gives greater importance to larger forecasting errors.
 
+    ### Bias
+
+    Measures the average signed forecasting error.
+
+    Positive Bias indicates over-forecasting.
+    Negative Bias indicates under-forecasting.
+
     ### Models
 
     - **Naive** — uses the latest observed value.
-    - **Seasonal Naive** — uses the corresponding value from
-      the previous seasonal cycle.
-    - **ARIMA** — models autoregression, differencing and
-      moving-average behavior.
+    - **Seasonal Naive** — uses the corresponding value
+      from the previous seasonal cycle.
+    - **ARIMA** — models autoregression, differencing
+      and moving-average behavior.
     - **SARIMA** — extends ARIMA with seasonal components.
-    - **Prophet** — models trend and seasonality using a
-      decomposable forecasting approach.
+    - **Prophet** — models trend and seasonality using
+      a decomposable forecasting approach.
 
-    For this project, the model comparison is performed
-    separately for each insurer because different insurers
-    can have different time-series behavior.
+    The project compares models separately for each
+    insurer because different insurers can have
+    different time-series behavior.
     """
 )
