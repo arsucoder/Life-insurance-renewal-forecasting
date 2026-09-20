@@ -8,7 +8,7 @@ import os
 # ============================================================
 
 st.set_page_config(
-    page_title="Duration Analysis",
+    page_title="Duration Bucket Analysis",
     page_icon="⏳",
     layout="wide"
 )
