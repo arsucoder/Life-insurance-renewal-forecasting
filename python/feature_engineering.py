@@ -1,74 +1,87 @@
-from data_cleaning import df
 import pandas as pd
+from pathlib import Path
+
+from data_cleaning import df
 
 
-# Create collection month
-df['collection_month'] = (
-    df['collection_date']
-    .dt.to_period('M')
-    .astype(str)
+BASE_DIR = Path(__file__).resolve().parents[1]
+
+OUTPUT_FILE = (
+    BASE_DIR
+    / "data"
+    / "processed"
+    / "Insurance_renewal_preprocessed.csv"
 )
 
 
-# Create year feature
-df['year'] = df['collection_date'].dt.year
+def feature_engineering(df):
+    df['collection_month'] = (
+        df['collection_date']
+        .dt.to_period('M')
+        .astype(str)
+    )
+
+    df['year'] = df['collection_date'].dt.year
+
+    def iqr_bounds(s):
+        q1 = s.quantile(0.25)
+        q3 = s.quantile(0.75)
+        iqr = q3 - q1
+        return q1 - 1.5 * iqr, q3 + 1.5 * iqr
+
+    p_lo, p_hi = iqr_bounds(df['premium_amount'])
+    a_lo, a_hi = iqr_bounds(df['customer_age'])
+
+    df['premium_outlier_flag'] = (
+        (df['premium_amount'] < p_lo) |
+        (df['premium_amount'] > p_hi)
+    ).astype(int)
+
+    df['age_outlier_flag'] = (
+        (df['customer_age'] < a_lo) |
+        (df['customer_age'] > a_hi)
+    ).astype(int)
+
+    bins = [0, 10, 15, 20, 25]
+    labels = [
+        '5-10 Years',
+        '11-15 Years',
+        '16-20 Years',
+        '21-25 Years'
+    ]
+
+    df['duration_bucket'] = pd.cut(
+        df['policy_duration'],
+        bins=bins,
+        labels=labels,
+        include_lowest=True
+    )
+
+    df['renewal_flag'] = (
+        df['renewal_status'].eq('Renewed')
+    ).astype(int)
+
+    df = df.sort_values(
+        ['collection_date', 'policy_id']
+    ).reset_index(drop=True)
+
+    return df
 
 
-# Create premium outlier flag using IQR
-Q1 = df['premium_amount'].quantile(0.25)
-Q3 = df['premium_amount'].quantile(0.75)
+def save_processed_data(df):
+    OUTPUT_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True
+    )
 
-IQR = Q3 - Q1
+    df.to_csv(
+        OUTPUT_FILE,
+        index=False
+    )
 
-lower_bound = Q1 - 1.5 * IQR
-upper_bound = Q3 + 1.5 * IQR
-
-df['premium_outlier_flag'] = (
-    (df['premium_amount'] < lower_bound) |
-    (df['premium_amount'] > upper_bound)
-).astype(int)
-
-
-# Create age outlier flag using IQR
-Q1_age = df['customer_age'].quantile(0.25)
-Q3_age = df['customer_age'].quantile(0.75)
-
-IQR_age = Q3_age - Q1_age
-
-lower_age = Q1_age - 1.5 * IQR_age
-upper_age = Q3_age + 1.5 * IQR_age
-
-df['age_outlier_flag'] = (
-    (df['customer_age'] < lower_age) |
-    (df['customer_age'] > upper_age)
-).astype(int)
+    print("Saved:", OUTPUT_FILE)
 
 
-# Create policy duration buckets
-bins = [0, 10, 15, 20, 25]
-
-labels = [
-    '5-10 Years',
-    '11-15 Years',
-    '16-20 Years',
-    '21-25 Years'
-]
-
-df['duration_bucket'] = pd.cut(
-    df['policy_duration'],
-    bins=bins,
-    labels=labels,
-    include_lowest=True
-)
-
-
-# Create binary renewal flag
-df['renewal_flag'] = (
-    df['renewal_status']
-    .str.strip()
-    .str.lower()
-    .map({
-        'renewed': 1,
-        'lapsed': 0
-    })
-)
+if __name__ == "__main__":
+    df = feature_engineering(df)
+    save_processed_data(df)
