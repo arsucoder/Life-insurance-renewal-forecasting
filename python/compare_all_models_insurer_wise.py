@@ -19,6 +19,7 @@
 
 import os
 import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -56,14 +57,27 @@ SEASONAL_PERIOD = 12
 # ================================================================
 
 def metric_values(actual, predicted):
-    """Return required metrics plus MAPE as an additional diagnostic."""
-    metrics = calculate_metrics(actual, predicted)
+    """
+    Return all project metrics.
+
+    MAPE is retained because it is already part of
+    the existing project.
+
+    WAPE and Bias are included because they are
+    required by the hackathon problem statement.
+    """
+
+    metrics = calculate_metrics(
+        actual,
+        predicted
+    )
+
     return (
         metrics["MAE"],
         metrics["RMSE"],
         metrics["WAPE"],
         metrics["Bias"],
-        metrics["MAPE"],
+        metrics["MAPE"]
     )
 
 
@@ -73,17 +87,23 @@ def metric_values(actual, predicted):
 
 def prepare_data(df, insurer):
 
-    data = df[df["insurer"] == insurer].copy()
+    data = df[
+        df["insurer"] == insurer
+    ].copy()
 
     data["collection_month"] = pd.to_datetime(
         data["collection_month"]
     )
 
-    data = data.sort_values("collection_month")
+    data = data.sort_values(
+        "collection_month"
+    )
 
-    # Keep only required columns
     data = data[
-        ["collection_month", TARGET]
+        [
+            "collection_month",
+            TARGET
+        ]
     ].copy()
 
     data[TARGET] = pd.to_numeric(
@@ -93,8 +113,9 @@ def prepare_data(df, insurer):
 
     data = data.dropna()
 
-    # Monthly frequency
-    data = data.set_index("collection_month")
+    data = data.set_index(
+        "collection_month"
+    )
 
     data = data.asfreq("MS")
 
@@ -134,16 +155,21 @@ def seasonal_naive_forecast(
         if len(train) >= seasonal_period:
 
             prediction = train.iloc[
-                -seasonal_period + (i % seasonal_period)
+                -seasonal_period
+                + (i % seasonal_period)
             ]
 
         else:
 
             prediction = train.iloc[-1]
 
-        predictions.append(prediction)
+        predictions.append(
+            prediction
+        )
 
-    return np.array(predictions)
+    return np.array(
+        predictions
+    )
 
 
 # ================================================================
@@ -167,7 +193,9 @@ def arima_forecast(
         steps=len(test)
     )
 
-    return np.array(forecast)
+    return np.array(
+        forecast
+    )
 
 
 # ================================================================
@@ -197,7 +225,9 @@ def sarima_forecast(
         steps=len(test)
     )
 
-    return np.array(forecast)
+    return np.array(
+        forecast
+    )
 
 
 # ================================================================
@@ -211,17 +241,35 @@ def tune_sarima(
 
     candidates = [
 
-        ((0, 1, 1), (0, 0, 1, 12)),
+        (
+            (0, 1, 1),
+            (0, 0, 1, 12)
+        ),
 
-        ((0, 1, 1), (1, 0, 0, 12)),
+        (
+            (0, 1, 1),
+            (1, 0, 0, 12)
+        ),
 
-        ((1, 1, 0), (0, 0, 1, 12)),
+        (
+            (1, 1, 0),
+            (0, 0, 1, 12)
+        ),
 
-        ((1, 1, 0), (1, 0, 0, 12)),
+        (
+            (1, 1, 0),
+            (1, 0, 0, 12)
+        ),
 
-        ((1, 1, 1), (0, 0, 1, 12)),
+        (
+            (1, 1, 1),
+            (0, 0, 1, 12)
+        ),
 
-        ((1, 1, 1), (1, 0, 0, 12)),
+        (
+            (1, 1, 1),
+            (1, 0, 0, 12)
+        )
     ]
 
     results = []
@@ -237,19 +285,29 @@ def tune_sarima(
                 seasonal_order
             )
 
-            mae, rmse, wape, bias, mape = metric_values(
-                validation,
-                prediction
+            mae, rmse, wape, bias, mape = (
+                metric_values(
+                    validation,
+                    prediction
+                )
             )
 
             results.append({
+
                 "order": order,
-                "seasonal_order": seasonal_order,
+
+                "seasonal_order":
+                    seasonal_order,
+
                 "MAE": mae,
+
                 "RMSE": rmse,
-                            "WAPE": wape,
-            "Bias": bias,
-            "MAPE": mape
+
+                "WAPE": wape,
+
+                "Bias": bias,
+
+                "MAPE": mape
             })
 
         except Exception as e:
@@ -259,13 +317,20 @@ def tune_sarima(
                 f"{order} {seasonal_order}"
             )
 
-    results_df = pd.DataFrame(results)
+    results_df = pd.DataFrame(
+        results
+    )
 
     if results_df.empty:
-        return (1, 1, 1), (1, 0, 0, 12)
 
+        return (
+            (1, 1, 1),
+            (1, 0, 0, 12)
+        )
+
+    # Keep teammate's existing MAPE-based tuning.
     results_df = results_df.sort_values(
-        "WAPE"
+        "MAPE"
     )
 
     best = results_df.iloc[0]
@@ -289,16 +354,27 @@ def prophet_forecast(
 ):
 
     prophet_train = pd.DataFrame({
+
         "ds": train.index,
+
         "y": train.values
     })
 
     model = Prophet(
-        changepoint_prior_scale=changepoint_prior_scale,
-        seasonality_prior_scale=seasonality_prior_scale,
-        seasonality_mode=seasonality_mode,
+
+        changepoint_prior_scale=
+            changepoint_prior_scale,
+
+        seasonality_prior_scale=
+            seasonality_prior_scale,
+
+        seasonality_mode=
+            seasonality_mode,
+
         yearly_seasonality=True,
+
         weekly_seasonality=False,
+
         daily_seasonality=False
     )
 
@@ -314,7 +390,9 @@ def prophet_forecast(
         future
     )
 
-    return forecast["yhat"].values
+    return forecast[
+        "yhat"
+    ].values
 
 
 # ================================================================
@@ -330,43 +408,61 @@ def tune_prophet(
 
         {
             "name": "Default",
+
             "changepoint_prior_scale": 0.05,
+
             "seasonality_prior_scale": 10,
+
             "seasonality_mode": "additive"
         },
 
         {
             "name": "Flexible_Trend",
+
             "changepoint_prior_scale": 0.10,
+
             "seasonality_prior_scale": 10,
+
             "seasonality_mode": "additive"
         },
 
         {
             "name": "Strong_Trend",
+
             "changepoint_prior_scale": 0.50,
+
             "seasonality_prior_scale": 10,
+
             "seasonality_mode": "additive"
         },
 
         {
             "name": "Flexible_Seasonality",
+
             "changepoint_prior_scale": 0.05,
+
             "seasonality_prior_scale": 20,
+
             "seasonality_mode": "additive"
         },
 
         {
             "name": "Multiplicative",
+
             "changepoint_prior_scale": 0.05,
+
             "seasonality_prior_scale": 10,
+
             "seasonality_mode": "multiplicative"
         },
 
         {
             "name": "Flexible_Multiplicative",
+
             "changepoint_prior_scale": 0.10,
+
             "seasonality_prior_scale": 20,
+
             "seasonality_mode": "multiplicative"
         }
     ]
@@ -383,43 +479,60 @@ def tune_prophet(
         try:
 
             prediction = prophet_forecast(
+
                 train,
+
                 validation,
+
                 config[
                     "changepoint_prior_scale"
                 ],
+
                 config[
                     "seasonality_prior_scale"
                 ],
+
                 config[
                     "seasonality_mode"
                 ]
             )
 
-            mae, rmse, wape, bias, mape = metric_values(
-                validation,
-                prediction
+            mae, rmse, wape, bias, mape = (
+                metric_values(
+                    validation,
+                    prediction
+                )
             )
 
             results.append({
-                "name": config["name"],
+
+                "name":
+                    config["name"],
+
                 "changepoint_prior_scale":
                     config[
                         "changepoint_prior_scale"
                     ],
+
                 "seasonality_prior_scale":
                     config[
                         "seasonality_prior_scale"
                     ],
+
                 "seasonality_mode":
                     config[
                         "seasonality_mode"
                     ],
+
                 "MAE": mae,
+
                 "RMSE": rmse,
-                            "WAPE": wape,
-            "Bias": bias,
-            "MAPE": mape
+
+                "WAPE": wape,
+
+                "Bias": bias,
+
+                "MAPE": mape
             })
 
         except Exception as e:
@@ -429,12 +542,15 @@ def tune_prophet(
                 e
             )
 
-    results_df = pd.DataFrame(results)
+    results_df = pd.DataFrame(
+        results
+    )
 
     if results_df.empty:
 
         return configurations[0]
 
+    # Keep teammate's existing MAPE-based tuning.
     results_df = results_df.sort_values(
         "MAPE"
     )
@@ -442,15 +558,20 @@ def tune_prophet(
     best = results_df.iloc[0]
 
     return {
-        "name": best["name"],
+
+        "name":
+            best["name"],
+
         "changepoint_prior_scale":
             best[
                 "changepoint_prior_scale"
             ],
+
         "seasonality_prior_scale":
             best[
                 "seasonality_prior_scale"
             ],
+
         "seasonality_mode":
             best[
                 "seasonality_mode"
@@ -465,14 +586,20 @@ def tune_prophet(
 def main():
 
     print("=" * 80)
-    print("ALL INSURERS - ALL FORECASTING MODELS")
+
+    print(
+        "ALL INSURERS - ALL FORECASTING MODELS"
+    )
+
     print("=" * 80)
 
     # ------------------------------------------------------------
     # LOAD DATA
     # ------------------------------------------------------------
 
-    print("\nLoading data...")
+    print(
+        "\nLoading data..."
+    )
 
     df = pd.read_csv(
         DATA_PATH
@@ -506,10 +633,13 @@ def main():
     for insurer in insurers:
 
         print("\n")
+
         print("#" * 80)
+
         print(
             f"INSURER: {insurer}"
         )
+
         print("#" * 80)
 
         data = prepare_data(
@@ -532,11 +662,17 @@ def main():
         # 24 / 12 / 12 SPLIT
         # --------------------------------------------------------
 
-        train = data.iloc[:24][TARGET]
+        train = data.iloc[:24][
+            TARGET
+        ]
 
-        validation = data.iloc[24:36][TARGET]
+        validation = data.iloc[24:36][
+            TARGET
+        ]
 
-        test = data.iloc[36:48][TARGET]
+        test = data.iloc[36:48][
+            TARGET
+        ]
 
         print(
             "\nTrain:",
@@ -560,15 +696,22 @@ def main():
         )
 
         # ========================================================
+        # TRAIN + VALIDATION
+        # ========================================================
+
+        train_36 = pd.concat(
+            [
+                train,
+                validation
+            ]
+        )
+
+        # ========================================================
         # 1. NAIVE
         # ========================================================
 
-        print("\nNaive...")
-
-        # Tune nothing.
-        # Retrain on train + validation.
-        train_36 = pd.concat(
-            [train, validation]
+        print(
+            "\nNaive..."
         )
 
         naive_prediction = naive_forecast(
@@ -576,19 +719,35 @@ def main():
             test
         )
 
-        mae, rmse, wape, bias, mape = metric_values(
-            test,
-            naive_prediction
+        mae, rmse, wape, bias, mape = (
+            metric_values(
+                test,
+                naive_prediction
+            )
         )
 
         all_results.append({
-            "Insurer": insurer,
-            "Model": "Naive",
-            "MAE": mae,
-            "RMSE": rmse,
-                        "WAPE": wape,
-            "Bias": bias,
-            "MAPE": mape
+
+            "Insurer":
+                insurer,
+
+            "Model":
+                "Naive",
+
+            "MAE":
+                mae,
+
+            "RMSE":
+                rmse,
+
+            "WAPE":
+                wape,
+
+            "Bias":
+                bias,
+
+            "MAPE":
+                mape
         })
 
         # ========================================================
@@ -607,19 +766,35 @@ def main():
             )
         )
 
-        mae, rmse, wape, bias, mape = metric_values(
-            test,
-            seasonal_prediction
+        mae, rmse, wape, bias, mape = (
+            metric_values(
+                test,
+                seasonal_prediction
+            )
         )
 
         all_results.append({
-            "Insurer": insurer,
-            "Model": "Seasonal Naive",
-            "MAE": mae,
-            "RMSE": rmse,
-                        "WAPE": wape,
-            "Bias": bias,
-            "MAPE": mape
+
+            "Insurer":
+                insurer,
+
+            "Model":
+                "Seasonal Naive",
+
+            "MAE":
+                mae,
+
+            "RMSE":
+                rmse,
+
+            "WAPE":
+                wape,
+
+            "Bias":
+                bias,
+
+            "MAPE":
+                mape
         })
 
         # ========================================================
@@ -636,19 +811,35 @@ def main():
             (1, 1, 1)
         )
 
-        mae, rmse, wape, bias, mape = metric_values(
-            test,
-            arima_prediction
+        mae, rmse, wape, bias, mape = (
+            metric_values(
+                test,
+                arima_prediction
+            )
         )
 
         all_results.append({
-            "Insurer": insurer,
-            "Model": "ARIMA",
-            "MAE": mae,
-            "RMSE": rmse,
-                        "WAPE": wape,
-            "Bias": bias,
-            "MAPE": mape
+
+            "Insurer":
+                insurer,
+
+            "Model":
+                "ARIMA",
+
+            "MAE":
+                mae,
+
+            "RMSE":
+                rmse,
+
+            "WAPE":
+                wape,
+
+            "Bias":
+                bias,
+
+            "MAPE":
+                mape
         })
 
         # ========================================================
@@ -681,19 +872,35 @@ def main():
             )
         )
 
-        mae, rmse, wape, bias, mape = metric_values(
-            test,
-            tuned_sarima_prediction
+        mae, rmse, wape, bias, mape = (
+            metric_values(
+                test,
+                tuned_sarima_prediction
+            )
         )
 
         all_results.append({
-            "Insurer": insurer,
-            "Model": "Tuned SARIMA",
-            "MAE": mae,
-            "RMSE": rmse,
-                        "WAPE": wape,
-            "Bias": bias,
-            "MAPE": mape
+
+            "Insurer":
+                insurer,
+
+            "Model":
+                "Tuned SARIMA",
+
+            "MAE":
+                mae,
+
+            "RMSE":
+                rmse,
+
+            "WAPE":
+                wape,
+
+            "Bias":
+                bias,
+
+            "MAPE":
+                mape
         })
 
         # ========================================================
@@ -714,19 +921,35 @@ def main():
             )
         )
 
-        mae, rmse, wape, bias, mape = metric_values(
-            test,
-            default_prophet_prediction
+        mae, rmse, wape, bias, mape = (
+            metric_values(
+                test,
+                default_prophet_prediction
+            )
         )
 
         all_results.append({
-            "Insurer": insurer,
-            "Model": "Default Prophet",
-            "MAE": mae,
-            "RMSE": rmse,
-                        "WAPE": wape,
-            "Bias": bias,
-            "MAPE": mape
+
+            "Insurer":
+                insurer,
+
+            "Model":
+                "Default Prophet",
+
+            "MAE":
+                mae,
+
+            "RMSE":
+                rmse,
+
+            "WAPE":
+                wape,
+
+            "Bias":
+                bias,
+
+            "MAPE":
+                mape
         })
 
         # ========================================================
@@ -749,33 +972,54 @@ def main():
 
         tuned_prophet_prediction = (
             prophet_forecast(
+
                 train_36,
+
                 test,
+
                 best_prophet[
                     "changepoint_prior_scale"
                 ],
+
                 best_prophet[
                     "seasonality_prior_scale"
                 ],
+
                 best_prophet[
                     "seasonality_mode"
                 ]
             )
         )
 
-        mae, rmse, wape, bias, mape = metric_values(
-            test,
-            tuned_prophet_prediction
+        mae, rmse, wape, bias, mape = (
+            metric_values(
+                test,
+                tuned_prophet_prediction
+            )
         )
 
         all_results.append({
-            "Insurer": insurer,
-            "Model": "Tuned Prophet",
-            "MAE": mae,
-            "RMSE": rmse,
-                        "WAPE": wape,
-            "Bias": bias,
-            "MAPE": mape
+
+            "Insurer":
+                insurer,
+
+            "Model":
+                "Tuned Prophet",
+
+            "MAE":
+                mae,
+
+            "RMSE":
+                rmse,
+
+            "WAPE":
+                wape,
+
+            "Bias":
+                bias,
+
+            "MAPE":
+                mape
         })
 
         print(
@@ -790,9 +1034,13 @@ def main():
         all_results
     )
 
-    # Sort insurer + MAPE
+    # Keep MAPE as the primary sorting/selection
+    # criterion used by the existing implementation.
     results_df = results_df.sort_values(
-        ["Insurer", "WAPE"]
+        [
+            "Insurer",
+            "MAPE"
+        ]
     )
 
     # ============================================================
@@ -812,11 +1060,15 @@ def main():
     # ============================================================
     # CREATE WIDE TABLE
     # ============================================================
+    #
+    # Keep the existing MAPE-based wide comparison.
+    # WAPE and Bias remain available in the raw results file.
+    # ============================================================
 
     wide = results_df.pivot(
         index="Insurer",
         columns="Model",
-        values="WAPE"
+        values="MAPE"
     )
 
     # ------------------------------------------------------------
@@ -825,36 +1077,51 @@ def main():
 
     wide = wide.rename(
         columns={
-            "Naive": "Naive WAPE",
+
+            "Naive":
+                "Naive MAPE",
+
             "Seasonal Naive":
-                "Seasonal Naive WAPE",
+                "Seasonal Naive MAPE",
+
             "ARIMA":
-                "ARIMA WAPE",
+                "ARIMA MAPE",
+
             "Tuned SARIMA":
-                "Tuned SARIMA WAPE",
+                "Tuned SARIMA MAPE",
+
             "Default Prophet":
-                "Default Prophet WAPE",
+                "Default Prophet MAPE",
+
             "Tuned Prophet":
-                "Tuned Prophet WAPE"
+                "Tuned Prophet MAPE"
         }
     )
 
     # ------------------------------------------------------------
-    # Find best model based on test MAPE
+    # Find best model based on existing MAPE methodology
     # ------------------------------------------------------------
 
     model_columns = [
-        "Naive WAPE",
+
+        "Naive MAPE",
+
         "Seasonal Naive MAPE",
+
         "ARIMA MAPE",
+
         "Tuned SARIMA MAPE",
+
         "Default Prophet MAPE",
+
         "Tuned Prophet MAPE"
     ]
 
     wide["Best Model"] = wide[
         model_columns
-    ].idxmin(axis=1)
+    ].idxmin(
+        axis=1
+    )
 
     wide["Best Model"] = (
         wide["Best Model"]
@@ -865,23 +1132,28 @@ def main():
         )
     )
 
-    wide["Best Test WAPE"] = wide[
+    wide["Best Test MAPE"] = wide[
         model_columns
-    ].min(axis=1)
+    ].min(
+        axis=1
+    )
 
     # Put Best Model first
+
     wide = wide[
         [
             "Best Model",
             "Best Test MAPE"
-        ] + model_columns
+        ]
+        + model_columns
     ]
 
     wide = wide.sort_values(
-        "Best Test WAPE"
+        "Best Test MAPE"
     )
 
     # Save
+
     wide.to_csv(
         WIDE_RESULTS_PATH
     )
@@ -891,10 +1163,13 @@ def main():
     # ============================================================
 
     print("\n")
+
     print("=" * 100)
+
     print(
         "ALL INSURERS - ALL FORECASTING MODELS"
     )
+
     print("=" * 100)
 
     display_df = results_df.copy()
@@ -914,6 +1189,16 @@ def main():
         .round(4)
     )
 
+    display_df["Bias"] = (
+        display_df["Bias"]
+        .round(2)
+    )
+
+    display_df["MAPE"] = (
+        display_df["MAPE"]
+        .round(4)
+    )
+
     print(
         display_df.to_string(
             index=False
@@ -921,10 +1206,13 @@ def main():
     )
 
     print("\n")
+
     print("=" * 100)
+
     print(
         "INSURER-WISE MODEL COMPARISON"
     )
+
     print("=" * 100)
 
     print(
@@ -932,8 +1220,11 @@ def main():
     )
 
     print("\n")
+
     print("=" * 100)
+
     print("FILES SAVED")
+
     print("=" * 100)
 
     print(
