@@ -14,7 +14,7 @@ st.set_page_config(
     page_title="Insurer Analysis",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 
@@ -183,10 +183,18 @@ html, body, .stApp,
         var(--bg);
 }
 
-[data-testid="stSidebar"],
-[data-testid="stSidebarNav"],
-[data-testid="stSidebarCollapsedControl"],
-[data-testid="collapsedControl"] { display: none !important; }
+/* Sidebar now hosts the "All pages" nav, so keep it usable - just
+   hide Streamlit's own auto-generated multipage nav list inside it. */
+[data-testid="stSidebarNav"] { display: none !important; }
+
+[data-testid="stSidebar"] {
+    background: var(--card);
+    border-right: 1px solid var(--border);
+}
+
+[data-testid="stSidebar"] > div:first-child {
+    padding-top: 1.2rem;
+}
 
 #MainMenu { visibility: hidden; }
 footer { visibility: hidden; }
@@ -572,7 +580,8 @@ div[data-testid="stDateInput"] input { font-size: 0.85rem; min-width: 105px; }
 
 
 /* ========================================================
-   ALL-PAGES GRID (compact cards)
+   ALL-PAGES NAV (now lives in the sidebar - single column,
+   slightly slimmer than the old bottom-of-page grid cards)
    ======================================================== */
 
 [class*="st-key-mini_desc_"] { --accent: #2f6bd8; --tint: #eaf1fd; --edge: #a9c3f0; }
@@ -594,14 +603,14 @@ div[data-testid="stDateInput"] input { font-size: 0.85rem; min-width: 105px; }
     overflow: hidden;
     box-sizing: border-box;
     width: 100% !important;
-    height: 68px;
+    height: 60px;
     min-height: 0 !important;
     margin: 0 !important;
     display: flex !important;
     flex-direction: row !important;
     align-items: center;
     gap: 12px;
-    padding: 0 44px 0 12px !important;
+    padding: 0 40px 0 12px !important;
     background: var(--card) !important;
     border: 1px solid var(--border) !important;
     border-radius: 14px !important;
@@ -621,14 +630,14 @@ div[data-testid="stDateInput"] input { font-size: 0.85rem; min-width: 105px; }
 
 [class*="st-key-mini_"] a::before {
     content: "";
-    flex: 0 0 38px;
-    width: 38px;
-    height: 38px;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
     border-radius: 11px;
     background-color: var(--tint);
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 20px 20px;
+    background-size: 19px 19px;
 }
 
 [class*="st-key-mini_"] a::after {
@@ -637,15 +646,15 @@ div[data-testid="stDateInput"] input { font-size: 0.85rem; min-width: 105px; }
     right: 12px;
     top: 50%;
     transform: translateY(-50%);
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--tint);
     color: var(--accent);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     transition: background-color 0.16s ease, color 0.16s ease;
 }
@@ -661,7 +670,7 @@ div[data-testid="stDateInput"] input { font-size: 0.85rem; min-width: 105px; }
 [class*="st-key-mini_"] a p {
     margin: 0 !important;
     line-height: 1.3 !important;
-    font-size: 13.5px !important;
+    font-size: 13px !important;
     font-weight: 700;
     color: var(--navy) !important;
     white-space: nowrap;
@@ -670,6 +679,16 @@ div[data-testid="stDateInput"] input { font-size: 0.85rem; min-width: 105px; }
 }
 
 [class*="st-key-mini_"] a strong { font-weight: 700; }
+
+.sidebar-nav-title {
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 4px 4px 10px 4px;
+}
 
 
 /* ========================================================
@@ -849,6 +868,20 @@ df = (
     .sort_values(["insurer", "collection_month"])
     .reset_index(drop=True)
 )
+
+
+# ============================================================
+# SIDEBAR - "All pages" nav
+# Moved here from the bottom-of-page grid. Same mini_card()
+# helper and same CSS classes, just stacked in a single column
+# to fit the sidebar's width.
+# ============================================================
+
+with st.sidebar:
+    st.markdown('<div class="sidebar-nav-title">All pages</div>', unsafe_allow_html=True)
+
+    for page_key, group in MORE_PAGES:
+        mini_card(page_key, group)
 
 
 # ============================================================
@@ -1160,23 +1193,6 @@ with nav1:
 
 with nav2:
     nav_card("next", NEXT_PAGE, "Next")
-
-
-# ============================================================
-# ALL PAGES
-# ============================================================
-
-section_heading("All pages", BLUE)
-
-PER_ROW = 5
-
-for start in range(0, len(MORE_PAGES), PER_ROW):
-    row = MORE_PAGES[start:start + PER_ROW]
-    cols = st.columns(PER_ROW, gap="small")
-
-    for col, (page_key, group) in zip(cols, row):
-        with col:
-            mini_card(page_key, group)
 
 
 # ============================================================
