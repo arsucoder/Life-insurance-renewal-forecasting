@@ -18,7 +18,7 @@ st.set_page_config(
 # TITLE
 # ============================================================
 
-st.title("⏳ Policy Duration Analysis")
+st.title("Policy Duration Analysis")
 
 st.markdown(
     """
@@ -128,7 +128,7 @@ df = df.sort_values(
 # SIDEBAR
 # ============================================================
 
-st.sidebar.header("🔎 Duration Filters")
+st.sidebar.header("Duration Filters")
 
 
 duration_buckets = sorted(
@@ -213,7 +213,7 @@ if duration_df.empty:
 # ============================================================
 
 st.header(
-    f"📌 {selected_duration}"
+    f"{selected_duration}"
 )
 
 st.caption(
@@ -307,7 +307,7 @@ st.divider()
 # ============================================================
 
 st.subheader(
-    "💰 Monthly Renewed Premium"
+    "Monthly Renewed Premium"
 )
 
 
@@ -345,7 +345,7 @@ st.line_chart(
 # ============================================================
 
 st.subheader(
-    "📈 Monthly Renewal Rate"
+    "Monthly Renewal Rate"
 )
 
 
@@ -374,7 +374,7 @@ st.line_chart(
 st.divider()
 
 st.subheader(
-    "🔄 Duration Bucket Comparison"
+    "Duration Bucket Comparison"
 )
 
 
@@ -443,7 +443,7 @@ st.bar_chart(
 # ============================================================
 
 st.subheader(
-    "💵 Renewed Premium by Duration"
+    "Renewed Premium by Duration"
 )
 
 
@@ -536,7 +536,7 @@ st.dataframe(
 st.divider()
 
 st.subheader(
-    "📄 Monthly Duration Data"
+    "Monthly Duration Data"
 )
 
 

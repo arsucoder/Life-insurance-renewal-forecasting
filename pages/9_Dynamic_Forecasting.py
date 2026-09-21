@@ -21,7 +21,7 @@ st.set_page_config(
 # TITLE
 # ============================================================
 
-st.title("🔮 Dynamic Insurance Premium Forecasting")
+st.title(" Dynamic Insurance Premium Forecasting")
 
 st.divider()
 
@@ -167,7 +167,7 @@ if os.path.exists(MODEL_SELECTION_FILE):
 # SIDEBAR
 # ============================================================
 
-st.sidebar.header("⚙️ Forecast Settings")
+st.sidebar.header(" Forecast Settings")
 
 
 # ============================================================
@@ -331,7 +331,7 @@ else:
 # CURRENT INFORMATION
 # ============================================================
 
-st.subheader("📊 Forecast Configuration")
+st.subheader("Forecast Configuration")
 
 
 col1, col2, col3, col4 = st.columns(4)
@@ -559,7 +559,7 @@ def generate_forecast(
 # ============================================================
 
 generate = st.button(
-    "🚀 Generate Forecast",
+    " Generate Forecast",
     type="primary",
     use_container_width=True
 )
@@ -584,19 +584,12 @@ if generate:
             )
 
 
-        st.success(
-            f"""
-            Forecast successfully generated for
-            **{selected_insurer}**.
-            """
-        )
-
 
         # ====================================================
         # FORECAST KPIs
         # ====================================================
 
-        st.subheader("📈 Forecast Summary")
+        st.subheader(" Forecast Summary")
 
 
         total_forecast = (
@@ -667,7 +660,7 @@ if generate:
         # ====================================================
 
         st.subheader(
-            "📉 Historical vs Future Forecast"
+            " Historical vs Future Forecast"
         )
 
 
@@ -737,7 +730,7 @@ if generate:
         # ====================================================
 
         st.subheader(
-            "📋 Monthly Forecast"
+            " Monthly Forecast"
         )
 
 
@@ -786,7 +779,7 @@ if generate:
         # ====================================================
 
         st.subheader(
-            "📊 Monthly Forecast"
+            "Monthly Forecast"
         )
 
 
