@@ -9,7 +9,7 @@ import os
 
 st.set_page_config(
     page_title="Insurer Analysis",
-    page_icon="🏢",
+    page_icon=None,
     layout="wide"
 )
 

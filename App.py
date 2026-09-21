@@ -62,7 +62,7 @@ DATA_FILES = [
 PAGES = [
     {
         "file": "pages/01_Overview.py",
-        "icon": "",
+
         "title": "Overview",
         "desc": "High-level summary of renewal performance across the whole portfolio.",
         "category": "Descriptive Analysis",
@@ -70,7 +70,7 @@ PAGES = [
     },
     {
         "file": "pages/2_Insurer_Analysis.py",
-        "icon": "",
+
         "title": "Insurer Analysis",
         "desc": "Drill into any insurer: renewal rate, premium and policy trends by month.",
         "category": "Descriptive Analysis",
@@ -78,7 +78,7 @@ PAGES = [
     },
     {
         "file": "pages/3_Payment_Analysis.py",
-        "icon": "",
+
         "title": "Payment Analysis",
         "desc": "Compare renewal behaviour across payment modes.",
         "category": "Descriptive Analysis",
@@ -86,7 +86,7 @@ PAGES = [
     },
     {
         "file": "pages/4_Policy_Type_Analysis.py",
-        "icon": "",
+
         "title": "Policy Type Analysis",
         "desc": "See which policy types renew best and where premium is concentrated.",
         "category": "Descriptive Analysis",
@@ -94,7 +94,7 @@ PAGES = [
     },
     {
         "file": "pages/5_Region_Analysis.py",
-        "icon": "",
+
         "title": "Region Analysis",
         "desc": "Regional renewal performance, premium and policy trends.",
         "category": "Descriptive Analysis",
@@ -102,7 +102,7 @@ PAGES = [
     },
     {
         "file": "pages/6_Yearly_Analysis.py",
-        "icon": "",
+
         "title": "Yearly Analysis",
         "desc": "Financial-year view with year-over-year growth and best/worst years.",
         "category": "Descriptive Analysis",
@@ -110,7 +110,6 @@ PAGES = [
     },
     {
         "file": "pages/7_Time_Series_Analysis.py",
-        "icon": "",
         "title": "Time Series Analysis",
         "desc": "Trend, seasonality, stationarity (ADF), ACF and PACF of renewed premium.",
         "category": "Forecasting",
@@ -118,7 +117,6 @@ PAGES = [
     },
     {
         "file": "pages/8_Model_Comparison.py",
-        "icon": "",
         "title": "Model Comparison",
         "desc": "Compare Naive, Seasonal Naive, ARIMA, SARIMA and Prophet by MAPE, MAE and RMSE.",
         "category": "Forecasting",
@@ -126,7 +124,7 @@ PAGES = [
     },
     {
         "file": "pages/9_Dynamic_Forecasting.py",
-        "icon": "",
+
         "title": "Dynamic Forecasting",
         "desc": "Generate forecasts interactively and explore what the future may look like.",
         "category": "Forecasting",
@@ -134,7 +132,7 @@ PAGES = [
     },
     {
         "file": "pages/10_Business_Insights.py",
-        "icon": "",
+
         "title": "Business Insights",
         "desc": "Automatic insights, growth outlook and insurer comparison from forecasts.",
         "category": "Business",
@@ -201,7 +199,7 @@ def safe_rate(numerator, denominator):
 def render_card(page):
     """One navigation card with an open button."""
     with st.container(border=True):
-        st.markdown(f"### {page['icon']} {page['title']}")
+        st.markdown(f"### {page.get('icon', '')} {page.get('title', '')}")
         st.caption(page["desc"])
 
         if page_exists(page["file"]):
@@ -480,7 +478,7 @@ if snapshot_ready:
             st.page_link(
                 "pages/2_Insurer_Analysis.py",
                 label="Open detailed Insurer Analysis",
-                icon="",
+                icon=None,
             )
 
 st.divider()
@@ -518,7 +516,7 @@ with guided_col2:
         else:
             st.error(f"File not found: `{target_file}`")
 
-st.caption(f"{target_page['icon']} {target_page['desc']}")
+st.caption(f"{target_page.get('icon','')} {target_page['desc']}")
 
 st.divider()
 
