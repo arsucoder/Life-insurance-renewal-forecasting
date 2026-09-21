@@ -117,8 +117,7 @@ st.markdown(
 
         div[data-testid="element-container"] { margin-bottom: 0.1rem; }
 
-        /* ---------- FILTER LABELS ---------- */
-        .filter-label {
+        /* ---------- FILTER LABELS ---------- */        .filter-label {
             font-size: 0.72rem;
             font-weight: 600;
             color: #64748B;
@@ -237,8 +236,7 @@ if isinstance(date_range, tuple) and len(date_range) == 2:
         (insurer_df["collection_month"].dt.date >= start_date)
         & (insurer_df["collection_month"].dt.date <= end_date)
     ].copy()
-else:
-    filtered_df = insurer_df.copy()
+else:    filtered_df = insurer_df.copy()
 
 if filtered_df.empty:
     st.warning("No data available for the selected filters.")
@@ -358,7 +356,6 @@ with chart2:
             "<extra></extra>"
         ),
     )
-
     fig_premium.update_layout(
         height=195,
         margin=dict(l=8, r=8, t=4, b=8),
