@@ -1,7 +1,5 @@
-import os
+from urllib.parse import quote
 
-import numpy as np
-import pandas as pd
 import streamlit as st
 
 
@@ -10,595 +8,693 @@ import streamlit as st
 # ============================================================
 
 st.set_page_config(
-    page_title="Insurance Renewal Analytics",
+    page_title="Life Insurance Renewal Analytics",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
 )
 
 
 # ============================================================
-# HIDE STREAMLIT'S AUTOMATIC SIDEBAR PAGE LIST
-# (this home page uses its own navigation instead)
+# PAGE ROUTES
 # ============================================================
+
+PAGES = {
+    "overview": "pages/01_Overview.py",
+    "insurer": "pages/2_Insurer_Analysis.py",
+    "region": "pages/5_Region_Analysis.py",
+    "payment": "pages/3_Payment_Analysis.py",
+    "policy": "pages/4_Policy_Type_Analysis.py",
+    "yearly": "pages/6_Yearly_Analysis.py",
+    "timeseries": "pages/7_Time_Series_Analysis.py",
+    "models": "pages/8_Model_Comparison.py",
+    "dynamic": "pages/9_Dynamic_Forecasting.py",
+    "insights": "pages/10_Business_Insights.py",
+    "ai": "pages/12_AI_Assistant.py",
+}
+
+
+# ============================================================
+# CARD STYLE SYSTEM
+# ============================================================
+
+GROUPS = {
+    "quick": dict(accent="#2456d6", tint="#e7eeff", edge="#9db8f5", solid=True),
+    "desc": dict(accent="#2f6bd8", tint="#eaf1fd", edge="#a9c3f0"),
+    "fcst": dict(accent="#0f9b86", tint="#e3f6f2", edge="#8fd8ca"),
+    "ai": dict(accent="#c97a0c", tint="#fdf0dc", edge="#eec78a"),
+}
+
+# page key -> (group, icon)
+CARD_META = {
+    "overview": ("quick", "grid"),
+    "insurer": ("quick", "building"),
+    "region": ("desc", "pin"),
+    "payment": ("desc", "card"),
+    "policy": ("desc", "shield"),
+    "yearly": ("fcst", "calendar"),
+    "timeseries": ("fcst", "trend"),
+    "models": ("fcst", "bars"),
+    "dynamic": ("fcst", "sliders"),
+    "insights": ("fcst", "bulb"),
+    "ai": ("ai", "spark"),
+}
+
+
+# ============================================================
+# SVG ICONS
+# ============================================================
+
+ICONS = {
+    "grid": (
+        "<rect x='3' y='3' width='8' height='8' rx='1.5'/>"
+        "<rect x='13' y='3' width='8' height='5' rx='1.5'/>"
+        "<rect x='13' y='10' width='8' height='11' rx='1.5'/>"
+        "<rect x='3' y='13' width='8' height='8' rx='1.5'/>"
+    ),
+    "building": (
+        "<path d='M4 21V7l8-4 8 4v14'/>"
+        "<path d='M9 21v-6h6v6'/>"
+        "<path d='M8 10h.01M12 10h.01M16 10h.01'/>"
+    ),
+    "pin": (
+        "<path d='M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z'/>"
+        "<circle cx='12' cy='10' r='2.5'/>"
+    ),
+    "card": (
+        "<rect x='3' y='5' width='18' height='14' rx='2.5'/>"
+        "<path d='M3 10h18M7 15h4'/>"
+    ),
+    "shield": (
+        "<path d='M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'/>"
+        "<path d='M9 12l2 2 4-4'/>"
+    ),
+    "calendar": (
+        "<rect x='3' y='5' width='18' height='16' rx='2.5'/>"
+        "<path d='M3 10h18M8 3v4M16 3v4'/>"
+    ),
+    "trend": "<path d='M3 3v18h18'/><path d='M7 15l4-5 3 3 5-7'/>",
+    "bars": "<path d='M5 21V11M12 21V4M19 21v-7'/>",
+    "sliders": (
+        "<path d='M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1'/>"
+        "<circle cx='15' cy='6' r='2'/>"
+        "<circle cx='9' cy='12' r='2'/>"
+        "<circle cx='17' cy='18' r='2'/>"
+    ),
+    "bulb": (
+        "<path d='M9 18h6M10 21h4'/>"
+        "<path d='M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z'/>"
+    ),
+    "spark": (
+        "<path d='M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z'/>"
+        "<path d='M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z'/>"
+    ),
+}
+
+
+def icon_url(name: str, stroke: str) -> str:
+    svg = (
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' "
+        f"stroke='{stroke}' stroke-width='1.8' stroke-linecap='round' "
+        f"stroke-linejoin='round'>{ICONS[name]}</svg>"
+    )
+    return "data:image/svg+xml," + quote(svg)
+
+
+def build_card_css() -> str:
+    rules = []
+
+    for group, c in GROUPS.items():
+        rules.append(
+            f'[class*="st-key-card_{group}_"] '
+            f'{{ --accent: {c["accent"]}; --tint: {c["tint"]}; --edge: {c["edge"]}; }}'
+        )
+
+    for page, (group, icon) in CARD_META.items():
+        stroke = "#ffffff" if GROUPS[group].get("solid") else GROUPS[group]["accent"]
+        rules.append(
+            f'.st-key-card_{group}_{page} a::before '
+            f'{{ background-image: url("{icon_url(icon, stroke)}"); }}'
+        )
+
+    return "\n".join(rules)
+
+
+# ============================================================
+# CUSTOM CSS
+# ============================================================
+
+BASE_CSS = """
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+    --bg: #f3f6fb;
+    --card: #ffffff;
+    --border: #e0e7f2;
+    --navy: #0e1b33;
+    --muted: #5b6b85;
+
+    /* ONE spacing value used everywhere: between rows, columns and sections */
+    --gap: 16px;
+
+    /* Fixed card heights so every card in a row/column is identical */
+    --card-h: 92px;
+    --card-h-lg: 104px;
+
+    --display: 'Bricolage Grotesque', 'DM Sans', system-ui, sans-serif;
+    --body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+html, body, .stApp,
+[data-testid="stMarkdownContainer"],
+[data-testid="stPageLink"] a {
+    font-family: var(--body);
+}
+
+.stApp {
+    background:
+        radial-gradient(900px 380px at 100% 0%, rgba(36, 86, 214, 0.06), transparent 70%),
+        var(--bg);
+}
+
+[data-testid="stSidebar"],
+[data-testid="stSidebarNav"],
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="collapsedControl"] { display: none !important; }
+
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+
+header[data-testid="stHeader"] {
+    height: 1.5rem;
+    background: transparent;
+}
+
+.block-container {
+    max-width: 1400px;
+    padding: 1rem 2rem 1.5rem 2rem;
+}
+
+
+/* ========================================================
+   SPACING SYSTEM
+   Vertical gaps and horizontal column gaps are forced to the
+   same value, so the grid rhythm is constant.
+   ======================================================== */
+
+div[data-testid="stVerticalBlock"] { gap: var(--gap); }
+
+div[data-testid="stHorizontalBlock"] { gap: var(--gap) !important; }
+
+/* Let columns shrink instead of overflowing into their neighbour */
+@media (min-width: 641px) {
+    div[data-testid="stColumn"] { min-width: 0 !important; }
+}
+
+
+/* ========================================================
+   HERO
+   ======================================================== */
+
+.hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 190px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 28px 38px;
+    border-radius: 22px;
+    background: linear-gradient(115deg, #0b1a36 0%, #12305f 58%, #1b4b8c 100%);
+    box-shadow: 0 14px 34px rgba(11, 26, 54, 0.22);
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    right: -70px;
+    top: -110px;
+    width: 380px;
+    height: 380px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(94, 234, 212, 0.20), transparent 65%);
+}
+
+.hero-content { position: relative; z-index: 2; max-width: 640px; }
+
+.hero-kicker {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.07);
+    color: #a9c8ff;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.hero-title {
+    font-family: var(--display);
+    font-size: 38px;
+    line-height: 1.08;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+    margin: 0;
+}
+
+.hero-description {
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.74);
+    max-width: 560px;
+    margin-top: 10px;
+}
+
+.hero-features { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+
+.hero-feature {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+    color: #eaf2ff;
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.hero-feature i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+
+.hero-visual { position: relative; z-index: 1; width: 360px; flex-shrink: 0; }
+.hero-visual svg { width: 100%; height: auto; display: block; }
+
+@keyframes draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes fade-in   { from { opacity: 0; } to { opacity: 1; } }
+
+.chart-actual   { stroke-dasharray: 1; animation: draw-line 1.4s ease-out both; }
+.chart-forecast { animation: fade-in 0.7s ease-out 1.2s both; }
+.chart-band     { animation: fade-in 0.9s ease-out 1.4s both; }
+
+@media (prefers-reduced-motion: reduce) {
+    .chart-actual, .chart-forecast, .chart-band { animation: none; }
+}
+
+
+/* ========================================================
+   SECTION HEADINGS
+   28px of air above (12 margin + 16 gap), 16px below.
+   ======================================================== */
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    color: var(--navy);
+    margin: 12px 0 8px 0;
+}
+
+.section-line { width: 4px; height: 18px; border-radius: 3px; display: inline-block; }
+
+
+/* ========================================================
+   CARD WRAPPERS
+   Strip every margin/padding Streamlit puts around a card
+   so the only space between cards is --gap.
+   ======================================================== */
+
+[class*="st-key-card_"],
+[class*="st-key-card_"] > div,
+[class*="st-key-card_"] [data-testid="stPageLink"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* ========================================================
+   CARD
+   ======================================================== */
+
+[class*="st-key-card_"] a {
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+
+    width: 100% !important;
+    height: var(--card-h);
+    min-height: 0 !important;
+    margin: 0 !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 14px;
+
+    padding: 0 56px 0 16px !important;
+
+    background: var(--card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 2px rgba(16, 38, 74, 0.04), 0 6px 16px rgba(16, 38, 74, 0.04);
+
+    color: var(--navy) !important;
+    text-decoration: none !important;
+
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+[class*="st-key-card_"] a:hover {
+    border-color: var(--edge) !important;
+    box-shadow: 0 10px 24px rgba(16, 38, 74, 0.11);
+    transform: translateY(-2px);
+}
+
+[class*="st-key-card_"] a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Icon tile */
+[class*="st-key-card_"] a::before {
+    content: "";
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    background-color: var(--tint);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 22px 22px;
+}
+
+/* Arrow chip */
+[class*="st-key-card_"] a::after {
+    content: "→";
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tint);
+    color: var(--accent);
+    font-size: 15px;
+    font-weight: 700;
+    transition: background-color 0.16s ease, color 0.16s ease, right 0.16s ease;
+}
+
+[class*="st-key-card_"] a:hover::after {
+    background: var(--accent);
+    color: #ffffff;
+    right: 13px;
+}
+
+/* Text: title on one line, description clamped to two lines */
+[class*="st-key-card_"] a [data-testid="stMarkdownContainer"] {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+}
+
+[class*="st-key-card_"] a p {
+    margin: 0 !important;
+    line-height: 1.4 !important;
+}
+
+[class*="st-key-card_"] a p:first-of-type {
+    font-size: 15px !important;
+    font-weight: 700;
+    color: var(--navy) !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+[class*="st-key-card_"] a p + p {
+    font-size: 12.5px !important;
+    font-weight: 400;
+    color: var(--muted) !important;
+    margin-top: 3px !important;
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+[class*="st-key-card_"] a strong { font-weight: 700; }
+
+
+/* ---------- Quick access: taller, solid icon tile ---------- */
+
+[class*="st-key-card_quick_"] a {
+    height: var(--card-h-lg);
+    padding-left: 20px !important;
+    border-color: #cfdcf7 !important;
+    background: linear-gradient(100deg, #ffffff 55%, #f1f6ff) !important;
+}
+
+[class*="st-key-card_quick_"] a::before {
+    flex-basis: 52px;
+    width: 52px;
+    height: 52px;
+    border-radius: 15px;
+    background-color: var(--accent);
+    background-size: 26px 26px;
+    box-shadow: 0 6px 14px rgba(36, 86, 214, 0.28);
+}
+
+[class*="st-key-card_quick_"] a p:first-of-type { font-size: 17px !important; }
+[class*="st-key-card_quick_"] a p + p { font-size: 13px !important; }
+
+
+/* ---------- AI assistant: full width ---------- */
+
+[class*="st-key-card_ai_"] a {
+    background: linear-gradient(100deg, #fff6e6 0%, #ffffff 70%) !important;
+    border-color: #f0d7a4 !important;
+}
+
+
+/* ========================================================
+   FOOTER
+   ======================================================== */
+
+.footer {
+    text-align: center;
+    color: #8fa0b8;
+    font-size: 11px;
+    margin-top: 8px;
+}
+
+
+/* ========================================================
+   RESPONSIVE
+   ======================================================== */
+
+@media (max-width: 1100px) {
+    .block-container { padding-left: 1.2rem; padding-right: 1.2rem; }
+    .hero-visual { width: 300px; }
+}
+
+@media (max-width: 900px) {
+    .hero { min-height: 150px; padding: 22px 24px; }
+    .hero-visual { display: none; }
+    .hero-title { font-size: 28px; }
+    .block-container { padding-left: 1rem; padding-right: 1rem; }
+}
+
+@media (max-width: 700px) {
+    :root { --card-h: 88px; --card-h-lg: 96px; }
+    [class*="st-key-card_"] a { padding-right: 52px !important; }
+}
+"""
 
 st.markdown(
-    """
-    <style>
-        [data-testid="stSidebar"],
-        [data-testid="stSidebarNav"],
-        [data-testid="stSidebarCollapsedControl"],
-        [data-testid="collapsedControl"] {
-            display: none !important;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
+    f"<style>{BASE_CSS}\n{build_card_css()}</style>",
+    unsafe_allow_html=True,
 )
-
-
-# ============================================================
-# FILE LOCATIONS
-# ============================================================
-
-INSURER_FILE = "data/processed/monthly_by_insurer.csv"
-
-DATA_FILES = [
-    "data/processed/monthly_by_insurer.csv",
-    "data/processed/monthly_by_payment_mode.csv",
-    "data/processed/monthly_by_policy_type.csv",
-    "data/processed/monthly_by_region.csv",
-    "data/processed/yearly_renewal_premium.csv",
-    "data/processed/monthly_renewal_premium.csv",
-    "reports/all_insurers_all_models_comparison.csv",
-    "reports/business_insights.csv",
-]
-
-
-# ============================================================
-# PAGE REGISTRY  (edit here if you rename a page file)
-# ============================================================
-
-PAGES = [
-    {
-        "file": "pages/01_Overview.py",
-
-        "title": "Overview",
-        "desc": "High-level summary of renewal performance across the whole portfolio.",
-        "category": "Descriptive Analysis",
-        "keywords": "summary kpi portfolio dashboard overall",
-    },
-    {
-        "file": "pages/2_Insurer_Analysis.py",
-
-        "title": "Insurer Analysis",
-        "desc": "Drill into any insurer: renewal rate, premium and policy trends by month.",
-        "category": "Descriptive Analysis",
-        "keywords": "insurer company renewal rate premium",
-    },
-    {
-        "file": "pages/3_Payment_Analysis.py",
-
-        "title": "Payment Analysis",
-        "desc": "Compare renewal behaviour across payment modes.",
-        "category": "Descriptive Analysis",
-        "keywords": "payment mode upi cash cheque online",
-    },
-    {
-        "file": "pages/4_Policy_Type_Analysis.py",
-
-        "title": "Policy Type Analysis",
-        "desc": "See which policy types renew best and where premium is concentrated.",
-        "category": "Descriptive Analysis",
-        "keywords": "policy type product plan",
-    },
-    {
-        "file": "pages/5_Region_Analysis.py",
-
-        "title": "Region Analysis",
-        "desc": "Regional renewal performance, premium and policy trends.",
-        "category": "Descriptive Analysis",
-        "keywords": "region geography zone state",
-    },
-    {
-        "file": "pages/6_Yearly_Analysis.py",
-
-        "title": "Yearly Analysis",
-        "desc": "Financial-year view with year-over-year growth and best/worst years.",
-        "category": "Descriptive Analysis",
-        "keywords": "year financial year growth yoy",
-    },
-    {
-        "file": "pages/7_Time_Series_Analysis.py",
-        "title": "Time Series Analysis",
-        "desc": "Trend, seasonality, stationarity (ADF), ACF and PACF of renewed premium.",
-        "category": "Forecasting",
-        "keywords": "time series trend seasonality adf acf pacf stationarity",
-    },
-    {
-        "file": "pages/8_Model_Comparison.py",
-        "title": "Model Comparison",
-        "desc": "Compare Naive, Seasonal Naive, ARIMA, SARIMA and Prophet by MAPE, MAE and RMSE.",
-        "category": "Forecasting",
-        "keywords": "model arima sarima prophet naive mape mae rmse accuracy",
-    },
-    {
-        "file": "pages/9_Dynamic_Forecasting.py",
-
-        "title": "Dynamic Forecasting",
-        "desc": "Generate forecasts interactively and explore what the future may look like.",
-        "category": "Forecasting",
-        "keywords": "forecast predict future dynamic",
-    },
-    {
-        "file": "pages/10_Business_Insights.py",
-
-        "title": "Business Insights",
-        "desc": "Automatic insights, growth outlook and insurer comparison from forecasts.",
-        "category": "Business",
-        "keywords": "insight recommendation outlook volatility growth",
-    },
-]
-
-CATEGORIES = ["Descriptive Analysis", "Forecasting", "Business"]
-CATEGORY_ICONS = {
-    "Descriptive Analysis": "📊",
-    "Forecasting": "🔮",
-    "Business": "💼",
-}
-
-# Guided navigation: question -> page file
-GUIDED = {
-    "How is the overall business performing?": "pages/01_Overview.py",
-    "Which insurer renews best?": "pages/2_Insurer_Analysis.py",
-    "Which payment mode has the best renewal rate?": "pages/3_Payment_Analysis.py",
-    "Which policy type renews best?": "pages/4_Policy_Type_Analysis.py",
-    "Which region is strongest or weakest?": "pages/5_Region_Analysis.py",
-    "How did each financial year perform?": "pages/6_Yearly_Analysis.py",
-    "Is there a trend or seasonality in premium?": "pages/7_Time_Series_Analysis.py",
-    "Which forecasting model is most accurate?": "pages/8_Model_Comparison.py",
-    "What will renewed premium look like next?": "pages/9_Dynamic_Forecasting.py",
-    "What should the business take away?": "pages/10_Business_Insights.py",
-}
-
-PAGE_BY_FILE = {p["file"]: p for p in PAGES}
 
 
 # ============================================================
 # HELPERS
 # ============================================================
 
-def page_exists(path):
-    return os.path.exists(path)
-
-
-@st.cache_data(show_spinner=False)
-def load_insurer_data(path):
-    df = pd.read_csv(path)
-    df.columns = df.columns.str.strip()
-
-    df["collection_month"] = pd.to_datetime(
-        df["collection_month"], errors="coerce"
+def section(title: str, color: str) -> None:
+    st.markdown(
+        f'<div class="section-title"><span class="section-line" '
+        f'style="background:{color}"></span>{title}</div>',
+        unsafe_allow_html=True,
     )
 
-    for col in [
-        "total_policies",
-        "renewed_policies",
-        "total_premium",
-        "renewed_premium",
-    ]:
-        df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    return df.dropna(subset=["collection_month"])
+def card(page: str, title: str, description: str) -> None:
+    group, _ = CARD_META[page]
 
-
-def safe_rate(numerator, denominator):
-    return numerator / denominator * 100 if denominator > 0 else 0
-
-
-def render_card(page):
-    """One navigation card with an open button."""
-    with st.container(border=True):
-        st.markdown(f"### {page.get('icon', '')} {page.get('title', '')}")
-        st.caption(page["desc"])
-
-        if page_exists(page["file"]):
-            st.page_link(
-                page["file"],
-                label="Open page",
-
-                use_container_width=True,
-            )
-        else:
-            st.warning(f"File not found: `{page['file']}`")
-
-
-def render_cards(pages, ncols=3):
-    for i in range(0, len(pages), ncols):
-        cols = st.columns(ncols)
-        for col, page in zip(cols, pages[i:i + ncols]):
-            with col:
-                render_card(page)
+    with st.container(key=f"card_{group}_{page}"):
+        st.page_link(
+            PAGES[page],
+            label=f"**{title}**\n\n{description}",
+        )
 
 
 # ============================================================
 # HERO
+# Keep this block free of blank lines - Streamlit's markdown
+# parser ends an HTML block at the first empty line.
 # ============================================================
 
-st.title("Insurance Renewal Analytics & Forecasting")
+HERO_HTML = """<div class="hero">
+<div class="hero-content">
+<div class="hero-kicker">Insurance analytics and forecasting</div>
+<div class="hero-title">Life Insurance Renewal Analytics</div>
+<div class="hero-description">Analyze renewal performance, explore business patterns, evaluate forecasting models and generate data-driven insights.</div>
+<div class="hero-features">
+<span class="hero-feature"><i style="background:#6ea8ff"></i>Analyze</span>
+<span class="hero-feature"><i style="background:#5eead4"></i>Forecast</span>
+<span class="hero-feature"><i style="background:#fbbf5a"></i>Understand</span>
+</div>
+</div>
+<div class="hero-visual">
+<svg viewBox="0 0 340 150" role="img" aria-label="Actual renewal premium followed by a forecast with a confidence band">
+<line x1="10" y1="128" x2="330" y2="128" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+<line x1="10" y1="90" x2="330" y2="90" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+<line x1="10" y1="52" x2="330" y2="52" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+<line x1="10" y1="14" x2="330" y2="14" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+<rect x="190" y="6" width="140" height="122" fill="rgba(255,255,255,0.04)"/>
+<line x1="190" y1="6" x2="190" y2="128" stroke="rgba(255,255,255,0.25)" stroke-width="1" stroke-dasharray="3 4"/>
+<polygon class="chart-band" points="190,58 215,44 240,46 265,26 290,26 315,10 330,4 330,52 315,54 290,66 265,62 240,70 215,62" fill="rgba(94,234,212,0.16)"/>
+<polyline class="chart-actual" pathLength="1" points="10,120 30,108 50,114 70,94 90,102 110,82 130,88 150,68 170,74 190,58" fill="none" stroke="#7fb2ff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline class="chart-forecast" points="190,58 215,52 240,58 265,42 290,46 315,32 330,28" fill="none" stroke="#5eead4" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5"/>
+<circle class="chart-forecast" cx="190" cy="58" r="4.5" fill="#ffffff" stroke="#7fb2ff" stroke-width="2"/>
+<text x="12" y="145" font-size="10" fill="rgba(255,255,255,0.55)" font-family="DM Sans, sans-serif">Actual</text>
+<text x="200" y="145" font-size="10" fill="rgba(255,255,255,0.55)" font-family="DM Sans, sans-serif">Forecast</text>
+</svg>
+</div>
+</div>"""
 
-st.markdown(
-    """
-    An interactive dashboard to **analyse renewal performance**, understand
-    **trends and seasonality**, compare **forecasting models** and turn
-    the results into **business insights**.
-    """
+st.markdown(HERO_HTML, unsafe_allow_html=True)
+
+
+# ============================================================
+# QUICK ACCESS
+# ============================================================
+
+section("Quick access", "#2456d6")
+
+qa1, qa2 = st.columns(2, gap="small")
+
+with qa1:
+    card(
+        "overview",
+        "Overview",
+        "High-level view of policies, renewals, renewal rate and renewed premium.",
+    )
+
+with qa2:
+    card(
+        "insurer",
+        "Insurer Analysis",
+        "Compare insurers on renewal performance, premium and policy trends.",
+    )
+
+
+# ============================================================
+# ANALYSIS + FORECASTING
+# ============================================================
+
+left, right = st.columns([1, 1.3], gap="small")
+
+with left:
+    section("Descriptive analysis", "#2f6bd8")
+
+    card(
+        "region",
+        "Region Analysis",
+        "Renewal performance across geographical regions.",
+    )
+    card(
+        "payment",
+        "Payment Analysis",
+        "Renewal behaviour across payment modes.",
+    )
+    card(
+        "policy",
+        "Policy Type Analysis",
+        "Renewal behaviour and premium across policy types.",
+    )
+
+with right:
+    section("Forecasting", "#0f9b86")
+
+    f1, f2 = st.columns(2, gap="small")
+    with f1:
+        card(
+            "yearly",
+            "Yearly Analysis",
+            "Financial-year performance and year-over-year change.",
+        )
+    with f2:
+        card(
+            "timeseries",
+            "Time Series Analysis",
+            "Trend, seasonality, stationarity, ACF and PACF.",
+        )
+
+    f3, f4 = st.columns(2, gap="small")
+    with f3:
+        card(
+            "models",
+            "Model Comparison",
+            "Compare forecasting models using MAPE, MAE and RMSE.",
+        )
+    with f4:
+        card(
+            "dynamic",
+            "Dynamic Forecasting",
+            "Generate interactive future renewal premium forecasts.",
+        )
+
+    card(
+        "insights",
+        "Business Insights",
+        "Automatic insights, growth outlook and insurer comparisons.",
+    )
+
+
+# ============================================================
+# AI ASSISTANT
+# ============================================================
+
+section("AI assistant", "#c97a0c")
+
+card(
+    "ai",
+    "AI Assistant",
+    "Ask questions about the insurance renewal data in plain language.",
 )
 
-st.divider()
-
 
 # ============================================================
-# LIVE SNAPSHOT (INTERACTIVE)
+# FOOTER
 # ============================================================
 
-st.subheader("Live Snapshot")
-
-snapshot_ready = False
-
-if not page_exists(INSURER_FILE):
-    st.info(
-        f"Snapshot unavailable — `{INSURER_FILE}` not found. "
-        "The navigation below still works."
-    )
-else:
-    try:
-        data = load_insurer_data(INSURER_FILE)
-
-        needed = {
-            "collection_month",
-            "insurer",
-            "total_policies",
-            "renewed_policies",
-            "total_premium",
-            "renewed_premium",
-        }
-
-        if not needed.issubset(data.columns):
-            st.warning(
-                f"Snapshot unavailable — missing columns: "
-                f"{sorted(needed - set(data.columns))}"
-            )
-        elif data.empty:
-            st.warning("Snapshot unavailable — the dataset is empty.")
-        else:
-            snapshot_ready = True
-
-    except Exception as e:
-        st.warning(f"Snapshot could not be loaded: {e}")
-
-
-if snapshot_ready:
-
-    # ---------------- Controls ----------------
-
-    all_months = list(
-        pd.to_datetime(sorted(data["collection_month"].unique()))
-    )
-
-    insurers = ["All Insurers"] + sorted(data["insurer"].dropna().unique())
-
-    ctrl1, ctrl2, ctrl3 = st.columns([1.2, 1.2, 2])
-
-    with ctrl1:
-        snap_insurer = st.selectbox("Insurer", insurers, key="snap_insurer")
-
-    with ctrl2:
-        metric_choice = st.selectbox(
-            "Metric",
-            [
-                "Renewal Rate (%)",
-                "Renewed Premium (₹ Cr)",
-                "Total Premium (₹ Cr)",
-                "Renewed Policies",
-                "Total Policies",
-            ],
-            key="snap_metric",
-        )
-
-    with ctrl3:
-        if len(all_months) > 1:
-            start_m, end_m = st.select_slider(
-                "Period",
-                options=all_months,
-                value=(all_months[0], all_months[-1]),
-                format_func=lambda d: d.strftime("%b %Y"),
-                key="snap_period"
-            )
-        else:
-            start_m, end_m = all_months[0], all_months[0]
-            st.caption(f"Only one month available: {start_m.strftime('%b %Y')}")
-
-    chart_type = st.radio(
-        "Chart type",
-        ["Line", "Bar", "Area"],
-        horizontal=True,
-        key="snap_chart_type",
-    )
-
-    # ---------------- Filter ----------------
-
-    period_df = data[
-        (data["collection_month"] >= start_m)
-        & (data["collection_month"] <= end_m)
-    ]
-
-    if snap_insurer == "All Insurers":
-        scope_df = period_df
-    else:
-        scope_df = period_df[period_df["insurer"] == snap_insurer]
-
-    if scope_df.empty:
-        st.warning("No data for the selected filters.")
-    else:
-
-        # ---------------- KPIs ----------------
-
-        tp = scope_df["total_policies"].sum()
-        rp = scope_df["renewed_policies"].sum()
-        tprem = scope_df["total_premium"].sum()
-        rprem = scope_df["renewed_premium"].sum()
-
-        k1, k2, k3, k4, k5 = st.columns(5)
-
-        k1.metric("Total Policies", f"{tp:,.0f}")
-        k2.metric("Renewed Policies", f"{rp:,.0f}")
-        k3.metric("Renewal Rate", f"{safe_rate(rp, tp):.2f}%")
-        k4.metric("Total Premium", f"₹{tprem / 1e7:,.2f} Cr")
-        k5.metric("Renewed Premium", f"₹{rprem / 1e7:,.2f} Cr")
-
-        # ---------------- Trend chart ----------------
-
-        monthly = (
-            scope_df
-            .groupby("collection_month")[
-                [
-                    "total_policies",
-                    "renewed_policies",
-                    "total_premium",
-                    "renewed_premium",
-                ]
-            ]
-            .sum()
-            .sort_index()
-        )
-
-        monthly["renewal_rate"] = (
-            monthly["renewed_policies"]
-            / monthly["total_policies"].replace(0, np.nan)
-            * 100
-        )
-
-        metric_map = {
-            "Renewal Rate (%)": monthly["renewal_rate"],
-            "Renewed Premium (₹ Cr)": monthly["renewed_premium"] / 1e7,
-            "Total Premium (₹ Cr)": monthly["total_premium"] / 1e7,
-            "Renewed Policies": monthly["renewed_policies"],
-            "Total Policies": monthly["total_policies"],
-        }
-
-        series = metric_map[metric_choice].rename(metric_choice)
-
-        st.markdown(
-            f"**{metric_choice} — {snap_insurer}** "
-            f"({start_m.strftime('%b %Y')} → {end_m.strftime('%b %Y')})"
-        )
-
-        if chart_type == "Line":
-            st.line_chart(series)
-        elif chart_type == "Bar":
-            st.bar_chart(series)
-        else:
-            st.area_chart(series)
-
-        # ---------------- Leaderboard ----------------
-
-        with st.expander(" Insurer leaderboard for this period", expanded=False):
-
-            board = (
-                period_df
-                .groupby("insurer")
-                .agg(
-                    total_policies=("total_policies", "sum"),
-                    renewed_policies=("renewed_policies", "sum"),
-                    total_premium=("total_premium", "sum"),
-                    renewed_premium=("renewed_premium", "sum"),
-                )
-                .reset_index()
-            )
-
-            board["renewal_rate"] = (
-                board["renewed_policies"]
-                / board["total_policies"].replace(0, np.nan)
-                * 100
-            )
-
-            board = board.dropna(subset=["renewal_rate"]).sort_values(
-                "renewal_rate", ascending=False
-            )
-
-            if board.empty:
-                st.info("No leaderboard data available.")
-            else:
-                top = board.iloc[0]
-                bottom = board.iloc[-1]
-
-                b1, b2 = st.columns(2)
-
-                with b1:
-                    st.success(
-                        f"**Best renewal rate:** {top['insurer']} "
-                        f"({top['renewal_rate']:.2f}%)"
-                    )
-
-                with b2:
-                    st.warning(
-                        f"**Lowest renewal rate:** {bottom['insurer']} "
-                        f"({bottom['renewal_rate']:.2f}%)"
-                    )
-
-                st.bar_chart(
-                    board.set_index("insurer")["renewal_rate"]
-                )
-
-                show = board.copy()
-                show["total_premium"] = show["total_premium"] / 1e7
-                show["renewed_premium"] = show["renewed_premium"] / 1e7
-
-                show = show.rename(
-                    columns={
-                        "insurer": "Insurer",
-                        "total_policies": "Total Policies",
-                        "renewed_policies": "Renewed Policies",
-                        "total_premium": "Total Premium (₹ Cr)",
-                        "renewed_premium": "Renewed Premium (₹ Cr)",
-                        "renewal_rate": "Renewal Rate (%)",
-                    }
-                )
-
-                st.dataframe(
-                    show.round(2),
-                    use_container_width=True,
-                    hide_index=True,
-                )
-
-        # ---------------- Jump to insurer page ----------------
-
-        if page_exists("pages/2_Insurer_Analysis.py"):
-            st.page_link(
-                "pages/2_Insurer_Analysis.py",
-                label="Open detailed Insurer Analysis",
-                icon=None,
-            )
-
-st.divider()
-
-
-# ============================================================
-# GUIDED NAVIGATION
-# ============================================================
-
-st.subheader(" What do you want to find out?")
-
-guided_col1, guided_col2 = st.columns([3, 1])
-
-with guided_col1:
-    question = st.selectbox(
-        "Pick a question and I'll take you to the right page",
-        list(GUIDED.keys()),
-        key="guided_question",
-    )
-
-target_file = GUIDED[question]
-target_page = PAGE_BY_FILE[target_file]
-
-with guided_col2:
-    st.write("")
-    st.write("")
-    if st.button(
-        f"Go to {target_page['title']}",
-        key="guided_go",
-        use_container_width=True,
-        type="primary",
-    ):
-        if page_exists(target_file):
-            st.switch_page(target_file)
-        else:
-            st.error(f"File not found: `{target_file}`")
-
-st.caption(f"{target_page.get('icon','')} {target_page['desc']}")
-
-st.divider()
-
-
-# ============================================================
-# PAGE EXPLORER (SEARCH + TABS)
-# ============================================================
-
-st.subheader("Explore All Pages")
-
-query = st.text_input(
-    "Search pages",
-    placeholder="e.g. forecast, region, MAPE, payment…",
-    key="page_search",
-).strip().lower()
-
-if query:
-
-    results = [
-        p for p in PAGES
-        if query in p["title"].lower()
-        or query in p["desc"].lower()
-        or query in p["keywords"].lower()
-        or query in p["category"].lower()
-    ]
-
-    if results:
-        st.caption(f"{len(results)} page(s) match “{query}”")
-        render_cards(results)
-    else:
-        st.info("No pages match your search. Try another keyword.")
-
-else:
-
-    tabs = st.tabs(
-        [f"{CATEGORY_ICONS[c]} {c}" for c in CATEGORIES]
-    )
-
-    for tab, category in zip(tabs, CATEGORIES):
-        with tab:
-            render_cards(
-                [p for p in PAGES if p["category"] == category]
-            )
-
-st.divider()
-
-
-# ============================================================
-# WORKFLOW
-# ============================================================
-
-with st.expander("Suggested analysis workflow"):
-    st.markdown(
-        """
-        1. **Overview** — understand the overall renewal picture.
-        2. **Insurer / Payment / Policy Type / Region / Yearly** — find *where* renewals are strong or weak.
-        3. **Time Series Analysis** — check trend, seasonality and stationarity.
-        4. **Model Comparison** — see which forecasting model works best for each insurer.
-        5. **Dynamic Forecasting** — generate forecasts with the chosen model.
-        6. **Business Insights** — convert forecasts into actionable takeaways.
-        """
-    )
-
-
-# ============================================================
-# SYSTEM CHECK
-# ============================================================
-
-with st.expander("System check (data & page files)"):
-
-    left, right = st.columns(2)
-
-    with left:
-        st.markdown("**Data files**")
-        for f in DATA_FILES:
-            st.write(("✅ " if page_exists(f) else "❌ ") + f"`{f}`")
-
-    with right:
-        st.markdown("**Page files**")
-        for p in PAGES:
-            st.write(
-                ("✅ " if page_exists(p["file"]) else "❌ ")
-                + f"`{p['file']}`"
-            )
-
+st.markdown(
+    '<div class="footer">Life Insurance Renewal Analytics and Forecasting System</div>',
+    unsafe_allow_html=True,
+)
