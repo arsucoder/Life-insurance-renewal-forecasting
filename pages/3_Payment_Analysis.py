@@ -841,8 +841,8 @@ st.markdown(
                 </svg>
             </div>
             <div>
-                <div class="explore-title">Previous: Overview</div>
-                <div class="explore-sub">High-level view of policies, renewals and renewed premium.</div>
+                <div class="explore-title">Previous: Insurer Analysis</div>
+                <div class="explore-sub">Renewal performance and premium trends across insurers.</div>
             </div>
             <div class="explore-arrow">&larr;</div>
         </div>
@@ -862,6 +862,13 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+nav_prev, nav_next = st.columns(2)
+with nav_prev:
+    if st.button("← Previous: Insurer Analysis", key="keep_prev_insurer", type="primary", use_container_width=True):
+        st.switch_page("pages/2_Insurer_Analysis.py")
+with nav_next:
+    if st.button("Next: Policy Type Analysis →", key="keep_next_policy", type="primary", use_container_width=True):
+        st.switch_page("pages/4_Policy_Type_Analysis.py")
 
 st.markdown(
     '<div class="footer">Life Insurance Renewal Analytics and Forecasting System</div>',
