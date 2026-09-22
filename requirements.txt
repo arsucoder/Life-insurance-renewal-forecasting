@@ -1,4 +1,11 @@
+streamlit
 pandas
 numpy
-streamlit
 matplotlib
+seaborn
+scikit-learn
+statsmodels
+prophet
+plotly
+huggingface_hub
+duckdb
