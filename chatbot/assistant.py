@@ -1,7 +1,7 @@
 import re
 
 import streamlit as st
-from google import genai
+from huggingface_hub import InferenceClient
 
 from .data_engine import (
     execute_readonly,
@@ -10,11 +10,11 @@ from .data_engine import (
 
 
 # ============================================================
-# GEMINI SETTINGS
+# HUGGING FACE SETTINGS
 # ============================================================
 
-#MODEL_NAME = "gemini-2.5-flash"
-MODEL_NAME = "gemini-3.6-flash"
+MODEL_NAME = "Qwen/Qwen3-32B"
+
 
 # ============================================================
 # SYSTEM INSTRUCTIONS
@@ -46,51 +46,108 @@ IMPORTANT RULES:
 
 
 # ============================================================
-# GET GEMINI CLIENT
+# GET HUGGING FACE CLIENT
 # ============================================================
 
 @st.cache_resource
-def get_gemini_client():
+def get_huggingface_client():
     """
-    Create and cache the Gemini client.
+    Create and cache the Hugging Face InferenceClient.
     """
 
     api_key = st.secrets.get(
-        "GEMINI_API_KEY",
+        "HF_TOKEN",
         None
     )
 
     if not api_key:
 
         raise RuntimeError(
-            "GEMINI_API_KEY was not found. "
-            "Add it to .streamlit/secrets.toml."
+            "HF_TOKEN was not found. "
+            "Add HF_TOKEN to .streamlit/secrets.toml "
+            "or Streamlit Cloud Secrets."
         )
 
-    return genai.Client(
-        api_key=api_key
+    return InferenceClient(
+        api_key=api_key,
+        provider="auto",
     )
 
 
 # ============================================================
-# EXTRACT TEXT FROM GEMINI RESPONSE
+# EXTRACT TEXT FROM HUGGING FACE RESPONSE
 # ============================================================
 
 def get_response_text(response):
     """
-    Safely extract text from Gemini response.
+    Safely extract text from a Hugging Face
+    chat completion response.
     """
 
-    text = getattr(
-        response,
-        "text",
-        None
-    )
+    try:
 
-    if text is None:
+        content = response.choices[0].message.content
+
+    except (
+        AttributeError,
+        IndexError,
+        TypeError,
+    ):
+
         return ""
 
-    return text.strip()
+    if content is None:
+
+        return ""
+
+    return str(content).strip()
+
+
+# ============================================================
+# CALL HUGGING FACE MODEL
+# ============================================================
+
+def call_llm(
+    user_prompt,
+    temperature=0.0,
+    max_tokens=1000,
+):
+    """
+    Send a prompt to the Hugging Face model.
+    """
+
+    client = get_huggingface_client()
+
+    response = client.chat.completions.create(
+        model=MODEL_NAME,
+
+        messages=[
+            {
+                "role": "system",
+                "content": SYSTEM_INSTRUCTION,
+            },
+            {
+                "role": "user",
+                "content": user_prompt,
+            },
+        ],
+
+        temperature=temperature,
+
+        max_tokens=max_tokens,
+
+        stream=False,
+    )
+
+    text = get_response_text(response)
+
+    if not text:
+
+        raise RuntimeError(
+            "Hugging Face returned an empty response."
+        )
+
+    return text
 
 
 # ============================================================
@@ -103,6 +160,10 @@ def clean_sql(sql):
     SELECT/WITH query.
     """
 
+    if not sql:
+
+        return ""
+
     sql = sql.strip()
 
     # Remove ```sql
@@ -110,26 +171,102 @@ def clean_sql(sql):
         r"^```sql\s*",
         "",
         sql,
-        flags=re.IGNORECASE
+        flags=re.IGNORECASE,
     )
 
-    # Remove ```
+    # Remove ```SQL
+    sql = re.sub(
+        r"^```SQL\s*",
+        "",
+        sql,
+        flags=re.IGNORECASE,
+    )
+
+    # Remove generic ```
     sql = re.sub(
         r"^```\s*|\s*```$",
         "",
-        sql
+        sql,
     )
 
     # Find SELECT or WITH
     match = re.search(
         r"(?is)\b(SELECT|WITH)\b.*",
-        sql
+        sql,
     )
 
     if match:
+
         sql = match.group(0)
 
+    # Remove trailing markdown fences if any
+    sql = sql.replace(
+        "```",
+        "",
+    )
+
     return sql.strip()
+
+
+# ============================================================
+# VALIDATE SQL
+# ============================================================
+
+def validate_sql(sql):
+    """
+    Basic safety validation.
+
+    Only SELECT/WITH queries are allowed.
+    """
+
+    if not sql:
+
+        raise ValueError(
+            "The AI model did not generate a SQL query."
+        )
+
+    sql_upper = sql.strip().upper()
+
+    # Must start with SELECT or WITH
+    if not (
+        sql_upper.startswith("SELECT")
+        or sql_upper.startswith("WITH")
+    ):
+
+        raise ValueError(
+            "Generated SQL is not a SELECT/WITH query."
+        )
+
+    forbidden_keywords = [
+        "INSERT",
+        "UPDATE",
+        "DELETE",
+        "DROP",
+        "ALTER",
+        "CREATE",
+        "COPY",
+        "ATTACH",
+        "DETACH",
+        "INSTALL",
+        "LOAD",
+        "PRAGMA",
+        "CALL",
+    ]
+
+    for keyword in forbidden_keywords:
+
+        pattern = rf"\b{keyword}\b"
+
+        if re.search(
+            pattern,
+            sql_upper,
+        ):
+
+            raise ValueError(
+                f"Unsafe SQL detected: {keyword}"
+            )
+
+    return True
 
 
 # ============================================================
@@ -139,14 +276,12 @@ def clean_sql(sql):
 def generate_sql(
     question,
     tables,
-    conversation_history=None
+    conversation_history=None,
 ):
     """
-    Ask Gemini to convert natural language
-    into a read-only SQL query.
+    Ask the Hugging Face model to convert natural language
+    into a read-only DuckDB SQL query.
     """
-
-    client = get_gemini_client()
 
     schema = schema_text(tables)
 
@@ -196,23 +331,26 @@ SQL RULES
 8. Do not use INSERT, UPDATE, DELETE, DROP, ALTER,
    CREATE, COPY, ATTACH, DETACH, INSTALL, LOAD,
    PRAGMA or CALL.
-9. Keep the result to a maximum of 200 rows.
-10. Do not invent columns.
+9. Do not use read_csv or read_parquet.
+10. Keep the result to a maximum of 200 rows.
+11. Do not invent columns.
+12. Do not explain the SQL.
+13. Return only the SQL query.
+
+Generate the SQL now.
 """
 
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=prompt,
-        config={
-            "system_instruction": SYSTEM_INSTRUCTION,
-            "temperature": 0,
-            "max_output_tokens": 1000,
-        },
+    sql = call_llm(
+        user_prompt=prompt,
+        temperature=0.0,
+        max_tokens=1000,
     )
 
-    return clean_sql(
-        get_response_text(response)
-    )
+    sql = clean_sql(sql)
+
+    validate_sql(sql)
+
+    return sql
 
 
 # ============================================================
@@ -222,14 +360,12 @@ SQL RULES
 def explain_result(
     question,
     sql,
-    result
+    result,
 ):
     """
-    Ask Gemini to convert the database result
-    into a natural-language answer.
+    Ask the Hugging Face model to convert the database
+    result into a natural-language answer.
     """
-
-    client = get_gemini_client()
 
     if result.empty:
 
@@ -276,19 +412,21 @@ ANSWERING RULES
 7. If a forecast is involved, call it an estimate.
 8. Do not claim causation unless the data establishes it.
 9. Do not provide personalized financial advice.
+10. Do not mention SQL unless the user explicitly asks.
+11. Answer in natural human language.
+12. If the result does not contain enough information
+    to answer the question, clearly say so.
+
+Provide the final answer now.
 """
 
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=prompt,
-        config={
-            "system_instruction": SYSTEM_INSTRUCTION,
-            "temperature": 0.2,
-            "max_output_tokens": 1200,
-        },
+    answer = call_llm(
+        user_prompt=prompt,
+        temperature=0.2,
+        max_tokens=1200,
     )
 
-    return get_response_text(response)
+    return answer
 
 
 # ============================================================
@@ -299,14 +437,14 @@ def answer_question(
     question,
     connection,
     tables,
-    conversation_history=None
+    conversation_history=None,
 ):
     """
     Complete pipeline:
 
     Natural language
             ↓
-        Gemini
+    Hugging Face LLM
             ↓
        SQL query
             ↓
@@ -314,7 +452,7 @@ def answer_question(
             ↓
        Actual result
             ↓
-        Gemini
+    Hugging Face LLM
             ↓
      Human answer
     """
@@ -337,16 +475,14 @@ def answer_question(
 
         result = execute_readonly(
             connection,
-            sql
+            sql,
         )
 
     except Exception as first_error:
 
         # ----------------------------------------------------
-        # Retry once with the SQL error
+        # Retry once with SQL error
         # ----------------------------------------------------
-
-        client = get_gemini_client()
 
         schema = schema_text(tables)
 
@@ -367,7 +503,16 @@ DATABASE ERROR:
 
 Return ONLY one corrected SELECT or WITH DuckDB query.
 
+IMPORTANT:
+
+- Use only tables and columns from the schema.
+- Do not invent columns.
+- Do not invent tables.
+- Do not use files.
+- Do not use the internet.
+
 Do not use:
+
 INSERT
 UPDATE
 DELETE
@@ -384,25 +529,25 @@ CALL
 read_csv
 read_parquet
 network URLs
+
+The corrected query must be read-only.
 """
 
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=retry_prompt,
-            config={
-                "system_instruction": SYSTEM_INSTRUCTION,
-                "temperature": 0,
-                "max_output_tokens": 1000,
-            },
+        corrected_sql = call_llm(
+            user_prompt=retry_prompt,
+            temperature=0.0,
+            max_tokens=1000,
         )
 
         sql = clean_sql(
-            get_response_text(response)
+            corrected_sql
         )
+
+        validate_sql(sql)
 
         result = execute_readonly(
             connection,
-            sql
+            sql,
         )
 
     # --------------------------------------------------------
@@ -415,4 +560,13 @@ network URLs
         result=result,
     )
 
-    return answer, sql, result
+    # --------------------------------------------------------
+    # STEP 4: Return
+    # --------------------------------------------------------
+
+    return (
+        answer,
+        sql,
+        result,
+    )
+    
