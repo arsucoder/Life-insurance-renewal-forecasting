@@ -10,7 +10,7 @@ from chatbot.data_engine import load_tables
 
 st.set_page_config(
     page_title="AI Assistant",
-    page_icon="🤖",
+    page_icon="",
     layout="wide",
 )
 

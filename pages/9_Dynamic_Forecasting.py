@@ -24,7 +24,7 @@ FONT = "DM Sans"
 
 st.set_page_config(
     page_title="Dynamic Insurance Forecasting",
-    page_icon="🔮",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="collapsed",
 )

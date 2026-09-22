@@ -12,9 +12,9 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Insurer Analysis",
-    page_icon="🛡️",
+    page_icon="",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 
@@ -54,24 +54,6 @@ PAGES = {
 
 PREV_PAGE = "overview"
 NEXT_PAGE = "payment"
-
-# "All pages" grid at the bottom: (page key, colour group).
-# This page (Insurer Analysis) is left out on purpose - on another
-# page, remove THAT page from this list instead.
-GROUP_ACCENT = {"desc": "#2f6bd8", "fcst": "#0f9b86", "ai": "#c97a0c"}
-
-MORE_PAGES = [
-    ("overview", "desc"),
-    ("payment", "desc"),
-    ("policy", "desc"),
-    ("region", "desc"),
-    ("ai", "ai"),
-    ("yearly", "fcst"),
-    ("timeseries", "fcst"),
-    ("models", "fcst"),
-    ("dynamic", "fcst"),
-    ("insights", "fcst"),
-]
 
 # Chart heights - lower these if you want the page even more compact
 RATE_H = 260
@@ -140,13 +122,6 @@ def build_dynamic_css() -> str:
             f'{{ background-image: url("{icon_url(icon, "#2f6bd8")}"); }}'
         )
 
-    for page_key, group in MORE_PAGES:
-        icon = PAGES[page_key][3]
-        rules.append(
-            f'.st-key-mini_{group}_{page_key} a::before '
-            f'{{ background-image: url("{icon_url(icon, GROUP_ACCENT[group])}"); }}'
-        )
-
     return "\n".join(rules)
 
 
@@ -183,18 +158,10 @@ html, body, .stApp,
         var(--bg);
 }
 
-/* Sidebar now hosts the "All pages" nav, so keep it usable - just
-   hide Streamlit's own auto-generated multipage nav list inside it. */
-[data-testid="stSidebarNav"] { display: none !important; }
-
-[data-testid="stSidebar"] {
-    background: var(--card);
-    border-right: 1px solid var(--border);
-}
-
-[data-testid="stSidebar"] > div:first-child {
-    padding-top: 1.2rem;
-}
+[data-testid="stSidebar"],
+[data-testid="stSidebarNav"],
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="collapsedControl"] { display: none !important; }
 
 #MainMenu { visibility: hidden; }
 footer { visibility: hidden; }
@@ -580,116 +547,8 @@ div[data-testid="stDateInput"] input { font-size: 0.85rem; min-width: 105px; }
 
 
 /* ========================================================
-   ALL-PAGES NAV (now lives in the sidebar - single column,
-   slightly slimmer than the old bottom-of-page grid cards)
+   ALL-PAGES GRID (compact cards)
    ======================================================== */
-
-[class*="st-key-mini_desc_"] { --accent: #2f6bd8; --tint: #eaf1fd; --edge: #a9c3f0; }
-[class*="st-key-mini_fcst_"] { --accent: #0f9b86; --tint: #e3f6f2; --edge: #8fd8ca; }
-[class*="st-key-mini_ai_"]   { --accent: #c97a0c; --tint: #fdf0dc; --edge: #eec78a; }
-
-[class*="st-key-mini_"],
-[class*="st-key-mini_"] > div,
-[class*="st-key-mini_"] [data-testid="stPageLink"] {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-[class*="st-key-mini_"] a {
-    position: relative;
-    overflow: hidden;
-    box-sizing: border-box;
-    width: 100% !important;
-    height: 60px;
-    min-height: 0 !important;
-    margin: 0 !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center;
-    gap: 12px;
-    padding: 0 40px 0 12px !important;
-    background: var(--card) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 14px !important;
-    box-shadow: 0 1px 2px rgba(16, 38, 74, 0.04), 0 4px 12px rgba(16, 38, 74, 0.04);
-    color: var(--navy) !important;
-    text-decoration: none !important;
-    transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
-}
-
-[class*="st-key-mini_"] a:hover {
-    border-color: var(--edge) !important;
-    box-shadow: 0 8px 20px rgba(16, 38, 74, 0.10);
-    transform: translateY(-2px);
-}
-
-[class*="st-key-mini_"] a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-[class*="st-key-mini_"] a::before {
-    content: "";
-    flex: 0 0 36px;
-    width: 36px;
-    height: 36px;
-    border-radius: 11px;
-    background-color: var(--tint);
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 19px 19px;
-}
-
-[class*="st-key-mini_"] a::after {
-    content: "→";
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--tint);
-    color: var(--accent);
-    font-size: 12px;
-    font-weight: 700;
-    transition: background-color 0.16s ease, color 0.16s ease;
-}
-
-[class*="st-key-mini_"] a:hover::after { background: var(--accent); color: #ffffff; }
-
-[class*="st-key-mini_"] a [data-testid="stMarkdownContainer"] {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-}
-
-[class*="st-key-mini_"] a p {
-    margin: 0 !important;
-    line-height: 1.3 !important;
-    font-size: 13px !important;
-    font-weight: 700;
-    color: var(--navy) !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-[class*="st-key-mini_"] a strong { font-weight: 700; }
-
-.sidebar-nav-title {
-    font-family: var(--display);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin: 4px 4px 10px 4px;
-}
-
 
 /* ========================================================
    FOOTER
@@ -759,13 +618,6 @@ def nav_card(slot: str, page_key: str, prefix: str) -> None:
 
     with st.container(key=f"card_desc_{slot}"):
         st.page_link(path, label=f"**{prefix}: {title}**\n\n{description}")
-
-
-def mini_card(page_key: str, group: str) -> None:
-    path, title, _description, _icon = PAGES[page_key]
-
-    with st.container(key=f"mini_{group}_{page_key}"):
-        st.page_link(path, label=f"**{title}**")
 
 
 def chart_title(text: str) -> dict:
@@ -868,20 +720,6 @@ df = (
     .sort_values(["insurer", "collection_month"])
     .reset_index(drop=True)
 )
-
-
-# ============================================================
-# SIDEBAR - "All pages" nav
-# Moved here from the bottom-of-page grid. Same mini_card()
-# helper and same CSS classes, just stacked in a single column
-# to fit the sidebar's width.
-# ============================================================
-
-with st.sidebar:
-    st.markdown('<div class="sidebar-nav-title">All pages</div>', unsafe_allow_html=True)
-
-    for page_key, group in MORE_PAGES:
-        mini_card(page_key, group)
 
 
 # ============================================================

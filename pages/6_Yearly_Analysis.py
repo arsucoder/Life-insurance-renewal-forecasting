@@ -21,7 +21,7 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Yearly Analysis",
-    page_icon="📅",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -110,6 +110,12 @@ ICONS = {
         "<path d='M7 10l5 5 5-5'/>"
         "<path d='M5 21h14'/>"
     ),
+    "grid": (
+        "<rect x='3' y='3' width='8' height='8' rx='1.5'/><rect x='13' y='3' width='8' height='5' rx='1.5'/>"
+        "<rect x='13' y='10' width='8' height='11' rx='1.5'/><rect x='3' y='13' width='8' height='8' rx='1.5'/>"
+    ),
+    "pin": "<path d='M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z'/><circle cx='12' cy='10' r='2.5'/>",
+    "trend": "<path d='M3 3v18h18'/><path d='M7 15l4-5 3 3 5-7'/>",
 }
 
 
@@ -141,9 +147,33 @@ KPI_CSS = "".join(
     for kind, (icon, color, tint) in KPI_STYLES.items()
 )
 
+
+# ============================================================
+# PAGE NAVIGATION
+# Order follows the pages/ file numbers used across the app:
+# Overview -> Insurer -> Payment -> Policy Type -> Region ->
+# Yearly -> Time Series -> Model Comparison -> Dynamic
+# Forecasting -> Business Insights -> AI Assistant.
+# ============================================================
+
+PAGES = {
+    "region": ("pages/5_Region_Analysis.py", "Region Analysis", "Renewal performance across geographical regions.", "pin"),
+    "timeseries": ("pages/7_Time_Series_Analysis.py", "Time Series Analysis", "Trend, seasonality, stationarity, ACF and PACF.", "trend"),
+}
+
+PREV_PAGE = "region"
+NEXT_PAGE = "timeseries"
+
+NAV_CSS = "".join(
+    f'.st-key-card_desc_{slot} a::before '
+    f'{{ background-image: url("{icon_url(PAGES[page_key][3], "#2f6bd8")}"); }} '
+    for slot, page_key in (("prev", PREV_PAGE), ("next", NEXT_PAGE))
+)
+
 DYNAMIC_CSS = f"""
 :root {{ --download-icon: url("{icon_url("download", BLUE)}"); }}
 {KPI_CSS}
+{NAV_CSS}
 """
 
 
@@ -486,27 +516,6 @@ div[data-testid="stHorizontalBlock"] { gap: var(--gap) !important; }
     margin: 4px 0 8px 0;
 }
 
-/* ---------- ANALYSIS INTRO ---------- */
-
-.analysis-intro {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 14px 16px;
-    background: #ffffff;
-    border: 1px solid var(--border);
-    border-left: 4px solid #2f6bd8;
-    border-radius: 12px;
-    color: #53637c;
-    font-size: 13px;
-    line-height: 1.55;
-}
-
-.analysis-intro strong {
-    color: var(--navy);
-    white-space: nowrap;
-}
-
 /* ---------- FILTER / INFO / HIGHLIGHT CARDS ---------- */
 
 .control-card,
@@ -620,6 +629,116 @@ div[data-testid="stHorizontalBlock"] { gap: var(--gap) !important; }
 [data-testid="stExpander"] summary { font-weight: 600; }
 [data-testid="stExpander"] summary svg { color: var(--navy) !important; }
 
+/* ---------- PREVIOUS / NEXT PAGE CARDS ---------- */
+
+[class*="st-key-card_desc_"] { --accent: #2f6bd8; --tint: #eaf1fd; --edge: #a9c3f0; }
+
+[class*="st-key-card_"],
+[class*="st-key-card_"] > div,
+[class*="st-key-card_"] [data-testid="stPageLink"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+[class*="st-key-card_"] a {
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    width: 100% !important;
+    height: 92px;
+    min-height: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 14px;
+    padding: 0 56px 0 16px !important;
+    background: var(--card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 2px rgba(16, 38, 74, 0.04), 0 6px 16px rgba(16, 38, 74, 0.04);
+    color: var(--navy) !important;
+    text-decoration: none !important;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+[class*="st-key-card_"] a:hover {
+    border-color: var(--edge) !important;
+    box-shadow: 0 10px 24px rgba(16, 38, 74, 0.11);
+    transform: translateY(-2px);
+}
+
+[class*="st-key-card_"] a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+[class*="st-key-card_"] a::before {
+    content: "";
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    background-color: var(--tint);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 22px 22px;
+}
+
+[class*="st-key-card_"] a::after {
+    content: "→";
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tint);
+    color: var(--accent);
+    font-size: 15px;
+    font-weight: 700;
+    transition: background-color 0.16s ease, color 0.16s ease, right 0.16s ease;
+}
+
+[class*="st-key-card_"] a:hover::after { background: var(--accent); color: #ffffff; right: 13px; }
+
+.st-key-card_desc_prev a::after { content: "←"; }
+.st-key-card_desc_prev a:hover::after { right: 16px; }
+
+[class*="st-key-card_"] a [data-testid="stMarkdownContainer"] {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+}
+
+[class*="st-key-card_"] a p { margin: 0 !important; line-height: 1.4 !important; }
+
+[class*="st-key-card_"] a p:first-of-type {
+    font-size: 15px !important;
+    font-weight: 700;
+    color: var(--navy) !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+[class*="st-key-card_"] a p + p {
+    font-size: 12.5px !important;
+    font-weight: 400;
+    color: var(--muted) !important;
+    margin-top: 3px !important;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+[class*="st-key-card_"] a strong { font-weight: 700; }
+
 /* ---------- FOOTER ---------- */
 
 .analysis-footer {
@@ -647,7 +766,6 @@ div[data-testid="stHorizontalBlock"] { gap: var(--gap) !important; }
 @media (max-width: 700px) {
     .kpi { height: 96px; }
     .kpi-value { font-size: 22px; }
-    .analysis-intro { flex-direction: column; gap: 4px; }
 }
 """
 
@@ -768,6 +886,13 @@ def info_card(label: str, value: str, sub: str = "", extra_class: str = "") -> N
 
 def chart_note(text: str) -> None:
     render_html(f'<div class="chart-note">{escape(text)}</div>')
+
+
+def nav_card(slot: str, page_key: str, prefix: str) -> None:
+    path, title, description, _icon = PAGES[page_key]
+
+    with st.container(key=f"card_desc_{slot}"):
+        st.page_link(path, label=f"**{prefix}: {title}**\n\n{description}")
 
 
 def style_fig(fig, title: str, y_title: str, height: int = 380, bottom: int = 20):
@@ -1058,24 +1183,6 @@ render_html(
     """
 )
 
-
-# ============================================================
-# INTRODUCTION
-# ============================================================
-
-render_html(
-    """
-    <div class="analysis-intro">
-        <strong>How to read this</strong>
-        <span>
-            The KPI cards follow the financial year you select (or all years
-            combined). The charts always show every year, with the selected
-            year shaded. Renewal rates are calculated from the policy and
-            premium totals, so they stay consistent for any selection.
-        </span>
-    </div>
-    """
-)
 
 if not load_info["chronological"]:
     st.warning(
@@ -1540,6 +1647,21 @@ with download_col2:
         key="download_csv",
         **STRETCH,
     )
+
+
+# ============================================================
+# PREVIOUS / NEXT
+# ============================================================
+
+section_heading("Keep exploring", "#2f6bd8")
+
+nav1, nav2 = st.columns(2, gap="small")
+
+with nav1:
+    nav_card("prev", PREV_PAGE, "Previous")
+
+with nav2:
+    nav_card("next", NEXT_PAGE, "Next")
 
 
 # ============================================================
