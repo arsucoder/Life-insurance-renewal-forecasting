@@ -234,43 +234,70 @@ st.markdown(
             margin-top: 10px;
         }
 
-        /* ---------- KEEP EXPLORING ---------- */
-        .explore-grid { display: flex; gap: 14px; }
-        .explore-card {
-            flex: 1;
-            background: #FFFFFF;
-            border: 1px solid #E5EAF1;
-            border-radius: 16px;
-            padding: 16px 18px;
-            display: flex;
-            gap: 14px;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(15,23,42,0.05);
+        /* ---------- KEEP EXPLORING (clickable cards, same as Insurer Analysis) ---------- */
+        .st-key-keep_prev, .st-key-keep_next { --accent: #2f6bd8; --tint: #eaf1fd; --edge: #a9c3f0; }
+        .st-key-keep_prev, .st-key-keep_prev > div,
+        .st-key-keep_prev [data-testid="stButton"],
+        .st-key-keep_next, .st-key-keep_next > div,
+        .st-key-keep_next [data-testid="stButton"] {
+            width: 100% !important; min-width: 0 !important; max-width: none !important;
+            margin: 0 !important; padding: 0 !important;
         }
-        .explore-ico {
-            width: 46px; height: 46px;
-            border-radius: 13px;
-            background: #EFF6FF;
-            color: #2563EB;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
+        .st-key-keep_prev button, .st-key-keep_next button {
+            position: relative; overflow: hidden; box-sizing: border-box;
+            width: 100% !important; height: 92px; min-height: 0 !important; margin: 0 !important;
+            display: flex !important; flex-direction: row !important; align-items: center; gap: 14px;
+            padding: 0 56px 0 16px !important; text-align: left; cursor: pointer;
+            background: #ffffff !important; border: 1px solid #e0e7f2 !important; border-radius: 16px !important;
+            box-shadow: 0 1px 2px rgba(16,38,74,0.04), 0 6px 16px rgba(16,38,74,0.04);
+            color: #0e1b33 !important;
+            transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
         }
-        .explore-title { font-size: 0.88rem; font-weight: 700; color: #0F172A; }
-        .explore-sub { font-size: 0.76rem; color: #64748B; margin-top: 2px; }
-        .explore-arrow {
-            margin-left: auto;
-            width: 34px; height: 34px;
-            border-radius: 50%;
-            background: #EFF6FF;
-            color: #2563EB;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            font-weight: 700;
-            flex-shrink: 0;
+        .st-key-keep_prev button:hover, .st-key-keep_next button:hover {
+            border-color: #a9c3f0 !important;
+            box-shadow: 0 10px 24px rgba(16,38,74,0.11);
+            transform: translateY(-2px);
+        }
+        .st-key-keep_prev button:focus-visible, .st-key-keep_next button:focus-visible {
+            outline: 2px solid #2f6bd8; outline-offset: 2px;
+        }
+        .st-key-keep_prev button::before, .st-key-keep_next button::before {
+            content: ""; flex: 0 0 44px; width: 44px; height: 44px; border-radius: 13px;
+            background-color: #eaf1fd; background-repeat: no-repeat; background-position: center; background-size: 22px 22px;
+        }
+        .st-key-keep_prev button::before { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%232f6bd8%27%20stroke-width%3D%271.8%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Crect%20x%3D%273%27%20y%3D%273%27%20width%3D%277%27%20height%3D%277%27%20rx%3D%271.5%27/%3E%3Crect%20x%3D%2714%27%20y%3D%273%27%20width%3D%277%27%20height%3D%277%27%20rx%3D%271.5%27/%3E%3Crect%20x%3D%273%27%20y%3D%2714%27%20width%3D%277%27%20height%3D%277%27%20rx%3D%271.5%27/%3E%3Crect%20x%3D%2714%27%20y%3D%2714%27%20width%3D%277%27%20height%3D%277%27%20rx%3D%271.5%27/%3E%3C/svg%3E"); }
+        .st-key-keep_next button::before { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%232f6bd8%27%20stroke-width%3D%271.8%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M12%202l8%203v6c0%205-3.5%208.6-8%2010-4.5-1.4-8-5-8-10V5l8-3z%27/%3E%3C/svg%3E"); }
+        .st-key-keep_prev button::after, .st-key-keep_next button::after {
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: #eaf1fd; color: #2f6bd8; font-size: 15px; font-weight: 700;
+            transition: background-color 0.16s ease, color 0.16s ease;
+            pointer-events: none;
+        }
+        .st-key-keep_prev button::after { content: "\u2190"; }
+        .st-key-keep_next button::after { content: "\u2192"; }
+        .st-key-keep_prev button:hover::after, .st-key-keep_next button:hover::after { background: #2f6bd8; color: #ffffff; }
+        .st-key-keep_prev button [data-testid="stMarkdownContainer"],
+        .st-key-keep_next button [data-testid="stMarkdownContainer"] {
+            flex: 1 1 auto; min-width: 0; overflow: hidden; text-align: left;
+        }
+        .st-key-keep_prev button p, .st-key-keep_next button p {
+            margin: 0 !important; line-height: 1.4 !important;
+            font-size: 15px !important; font-weight: 700; color: #0e1b33 !important;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .st-key-keep_prev button [data-testid="stMarkdownContainer"]::after,
+        .st-key-keep_next button [data-testid="stMarkdownContainer"]::after {
+            display: block; margin-top: 3px;
+            font-size: 12.5px; font-weight: 400; color: #5b6b85;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .st-key-keep_prev button [data-testid="stMarkdownContainer"]::after {
+            content: "Renewal performance and premium trends across insurers.";
+        }
+        .st-key-keep_next button [data-testid="stMarkdownContainer"]::after {
+            content: "Renewal behaviour across policy types.";
         }
 
         /* ---------- FOOTER ---------- */
@@ -824,51 +851,22 @@ with st.expander("Detailed tables"):
     )
 
 # -----------------------------
-# KEEP EXPLORING
+# KEEP EXPLORING (clickable cards, same look as Insurer Analysis;
+# navigation via st.switch_page, the supported API for pages/-directory apps)
 # -----------------------------
 st.markdown(
     '<div class="section-label"><span class="bar" style="background:#2563EB;"></span>Keep exploring</div>',
     unsafe_allow_html=True,
 )
-st.markdown(
-    """
-    <div class="explore-grid">
-        <div class="explore-card">
-            <div class="explore-ico">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
-                    <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
-                </svg>
-            </div>
-            <div>
-                <div class="explore-title">Previous: Insurer Analysis</div>
-                <div class="explore-sub">Renewal performance and premium trends across insurers.</div>
-            </div>
-            <div class="explore-arrow">&larr;</div>
-        </div>
-        <div class="explore-card">
-            <div class="explore-ico">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2l8 3v6c0 5-3.5 8.6-8 10-4.5-1.4-8-5-8-10V5l8-3z"/>
-                </svg>
-            </div>
-            <div>
-                <div class="explore-title">Next: Policy Type Analysis</div>
-                <div class="explore-sub">Renewal behaviour across policy types.</div>
-            </div>
-            <div class="explore-arrow">&rarr;</div>
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-nav_prev, nav_next = st.columns(2)
-with nav_prev:
-    if st.button("← Previous: Insurer Analysis", key="keep_prev_insurer", type="primary", use_container_width=True):
-        st.switch_page("pages/2_Insurer_Analysis.py")
-with nav_next:
-    if st.button("Next: Policy Type Analysis →", key="keep_next_policy", type="primary", use_container_width=True):
-        st.switch_page("pages/4_Policy_Type_Analysis.py")
+exp1, exp2 = st.columns(2, gap="small")
+with exp1:
+    with st.container(key="keep_prev"):
+        if st.button("Previous: Insurer Analysis", key="keep_prev_btn", width="stretch"):
+            st.switch_page("pages/2_Insurer_Analysis.py")
+with exp2:
+    with st.container(key="keep_next"):
+        if st.button("Next: Policy Type Analysis", key="keep_next_btn", width="stretch"):
+            st.switch_page("pages/4_Policy_Type_Analysis.py")
 
 st.markdown(
     '<div class="footer">Life Insurance Renewal Analytics and Forecasting System</div>',
